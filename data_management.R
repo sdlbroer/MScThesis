@@ -65,7 +65,7 @@ psa_long <- bind_rows(
   ) %>% 
   # keep only those where a PSA measure is available
   filter(!is.na(date_lab)) %>%  # none of these visits has a PSA measure
-  filter(!is.na(PSA)) %>%       # excluding about 37 PSA measurements
+  #filter(!is.na(PSA)) %>%       # excluding about 37 PSA measurements
   # NB: remove after checks
   filter(date_lab >= date_rand & date_lab <= last_dte) %>% 
   arrange(patientId, date_lab) %>% 
@@ -105,14 +105,14 @@ baseline_data_table1 <- left_join(
          TNMstagingM = E2_F5_TNMstagingM, Gleason = E2_F5_ISUP, 
          LocationMetastases = E2_F26_location_metastases)) %>%
   left_join(select(subjects_cr, id_num, patientId, therapy_class, therapy_received), by = 'patientId') %>%
-  left_join(distinct(psa_long[psa_long$NLCB == 1,], patientId, NLCB_overall = NLCB), 
+  left_join(distinct(psa_long[psa_long$NLCB == 1,], patientId, prog), 
             by = 'patientId') %>%
   mutate(dateOfBirth = as.numeric(date_lab - dateOfBirth)/365.25,
          dateOfmetastaticDisease = as.numeric(date_lab - dateOfmetastaticDisease)/365.25,
          dateOfPCdiagnosis = as.numeric(date_lab - dateOfPCdiagnosis)/365.25,
          therapy_class = as.character(therapy_class),
          therapy_received = as.character(therapy_received),
-         NLCB_overall_num = ifelse(is.na(NLCB_overall), 0, NLCB_overall),
+         NLCB_overall_num = ifelse(is.na(prog), 0, prog),
          NLCB_overall = ifelse(NLCB_overall_num == 0, 'No event', 'Event')) %>% 
   rename(age = dateOfBirth,
          TimeSinceMetastaticDisease = dateOfmetastaticDisease,
@@ -178,7 +178,7 @@ long_meas <- bind_rows(
   ) %>% 
   # keep only those where a PSA measure is available
   filter(!is.na(date_lab)) %>%  # none of these visits has a PSA measure
-  filter(!is.na(PSA)) %>%       # excluding about 37 PSA measurements
+  #filter(!is.na(PSA)) %>%       # excluding about 37 PSA measurements
   # NB: remove after checks
   filter(date_lab >= date_rand & date_lab <= last_dte) %>% 
   group_by(patientId) %>% 
@@ -190,7 +190,7 @@ long_meas <- bind_rows(
   ungroup() %>% 
   # remove after checks
   mutate(therapy_class = as.character(therapy_class),
-         therapy_received = as.character(therapy_received),
+         therapy_received = factor(therapy_received, levels = c('ARSi', 'Taxane', 'PARPi', 'Platinum')),
          months_in_followup = as.numeric(date_lab - baseline_date)/(365.25/12),
          months_in_followup_rounded = round(months_in_followup, 0),
          reverse_time = months_in_followup - time_obs,
