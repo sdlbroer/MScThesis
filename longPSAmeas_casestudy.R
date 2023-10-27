@@ -71,7 +71,7 @@ DECR_to_flat <- c('KAR2413', 'UZG3018', 'UZG3028', 'KS1104')
 ## category 3b: increase into decrease (cap)
 incr_to_decr <- c('CHUL3710', 'SG1073', 'NU1307', 'SG1047')
 
-# category 4
+# category 4: no clear direction
 ## category 4a: s-shaped (decrease, increase, decrease, increase)
 sshape <- c('AZGR3504', 'SG1012', 'AZSJ3101', 'UZG3030', 'AK1202', 'AK1220')
 
