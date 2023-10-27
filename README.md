@@ -6,4 +6,5 @@ The data used in this project is part of the ProBio trial, an international, mul
 The repository contains ... files:
 * data_management: loads all relevant dataframes and performs initial preparation of the most used dataframes;
 * longPSAmeas_casestudy: explores the different types of PSA trajectories for patients in the ProBio trial;
+* plots_results_Q1: produces all plots to answer the first research question, which focuses on exploring the PSA trajectories;
 * explanatory_model_JMbayes: fits a number of joint models to explore the relationship between repeated measurements of Prostate-Specific Antigen (PSA) and the survival outcome No-Longer Clinical Benefit (NLCB).
