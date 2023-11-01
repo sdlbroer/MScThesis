@@ -1,4 +1,4 @@
-# first run the data_management_v5 file
+# first run the data_management_v6 file
 
 # load libraries 
 library(ggplot2) # create plots
@@ -17,10 +17,16 @@ long_meas_train_noNA <- long_meas_train %>%
 length(unique(long_meas_train$patientId[!is.na(long_meas_train$PSA)])) 
 
 # nr. of repeated measurements
-table(distinct(long_meas_train, patientId, num_psa_value)$num_psa_value) 
+table(distinct(long_meas_train, patientId, num_psa_value)$num_psa_value)
+summary(distinct(long_meas_train, patientId, num_psa_value)$num_psa_value)
 
 # summary of the PSA values (incl. nr. missing)
-summary(long_meas_train$PSA) 
+summary(long_meas_train$PSA)
+tapply(long_meas_train$PSA, long_meas_train$therapy_received, summary)
+
+# summary of follow-up times
+summary((arrange(long_meas_train, patientId, desc(months_in_followup)) %>% 
+  filter(!duplicated(patientId)))$months_in_followup)
 
 #######################################
 ### plot(s) 1: histograms + boxplot ###
@@ -32,20 +38,23 @@ hist1 <- ggplot(long_meas_train_noNA, aes(x=PSA)) +
                  fill=brewer.pal(name="Paired", n = 12)[1], 
                  bins = 100) + 
   theme_bw() + 
-  xlab('PSA (ng/ml)')
+  xlab('PSA (ng/ml)') +
+  ylab('Count')
 
 hist2 <- ggplot(long_meas_train_noNA, aes(x=log2PSA)) + 
   geom_histogram(color=brewer.pal(name="Paired", n = 12)[2], 
                  fill=brewer.pal(name="Paired", n = 12)[1], 
                  bins = 100) + 
   theme_bw() + 
-  xlab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)')))
+  xlab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) + 
+  ylab('Count')
 
 # box plot 
 box <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2PSA, 
                                    fill = therapy_received)) +
   geom_boxplot() +
   theme_bw() + 
+  theme(legend.position = 'bottom') + 
   scale_fill_manual(values = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]) +
   labs(fill = 'Treatment') +
   xlab('Time in follow-up (months)') +
@@ -57,16 +66,18 @@ box <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2P
 
 # with LOESS smoothing
 spag.tot <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = PSA)) + 
-  geom_line(aes(group = patientId), colour = 'grey70') +
+  geom_line(aes(group = patientId, colour = patientId)) +
   geom_smooth(colour = 'black') +
   theme_bw() + 
   theme(legend.position = 'none') +
+  scale_colour_manual(values = brewer.pal(name="PuBu", n = 9)[rep(4:9, 31)]) + 
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) # all observations
 
 spag.tot.log <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2PSA)) + 
-  geom_line(aes(group = patientId), colour = 'grey70') +
+  geom_line(aes(group = patientId, colour = patientId)) +
   geom_smooth(colour = 'black') +
+  scale_colour_manual(values = brewer.pal(name="PuBu", n = 9)[rep(4:9, 31)]) + 
   theme_bw() + 
   theme(legend.position = 'none') +
   xlab('Time in follow-up (months)') +
@@ -89,7 +100,7 @@ reverse.event <- ggplot(data = long_meas_train_noNA, aes(x = reverse_time, y = l
   geom_smooth(colour = 'black') + 
   theme_bw() +
   theme(legend.position = 'none') +
-  scale_color_manual(values = brewer.pal(name="Paired", n = 12)[c(1,2)]) +
+  scale_color_manual(values = brewer.pal(name="PRGn", n = 11)[c(4,2)]) +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
   facet_wrap(~ NLCB_overall) # split on outcome
@@ -98,18 +109,7 @@ reverse.event <- ggplot(data = long_meas_train_noNA, aes(x = reverse_time, y = l
 ### plot(s) 3: mean profile plots ### 
 #####################################
 
-# dataframes with the mean information
-statsMean <- long_meas_train_noNA %>%
-  group_by(months_in_followup_rounded) %>%
-  summarise(
-    count = n(),
-    meanPSA = mean(log2PSA,na.rm=TRUE),
-    sdPSA = sd(log2PSA, na.rm=TRUE),
-    sePSA = sdPSA/sqrt(count),
-    ci95lower = meanPSA - sePSA*qnorm(0.975),
-    ci95upper = meanPSA + sePSA*qnorm(0.975)
-  )
-
+# dataframe with the mean information per treatment
 statsMeanTreat <- long_meas_train_noNA %>%
   group_by(therapy_received, months_in_followup_rounded) %>%
   summarise(
@@ -119,37 +119,42 @@ statsMeanTreat <- long_meas_train_noNA %>%
     sePSA = sdPSA/sqrt(count),
     ci95lower = meanPSA - sePSA*qnorm(0.975),
     ci95upper = meanPSA + sePSA*qnorm(0.975)
-  ) # split by treatment
+  ) %>%
+  rename(therapy_received = therapy_received)
 
-# mean profile plots 
-mean.tot <- ggplot(statsMean, aes(x = months_in_followup_rounded, y = meanPSA)) +
-  geom_line(aes(x = months_in_followup_rounded, y = log2PSA, group = patientId), 
-            data = long_meas_train_noNA, colour = 'grey60') +
-  geom_line(aes(colour = 'black')) + 
-  geom_errorbar(aes(ymin = ci95lower, ymax = ci95upper), width = 0.5, 
-                colour = 'black') +
-  geom_point(size = 2, colour = 'black') +
-  scale_color_manual(values = 'black') +
-  scale_shape_manual(values = c(15, 16)) +
-  guides(shape = FALSE) + 
-  theme_bw() +
-  theme(legend.position = 'none') +
+long_meas_train_noNA_int <- long_meas_train_noNA %>%
+  mutate(treat_num = as.character(as.numeric(therapy_received)))
+
+# mean profile plot
+mean.treat_withleg <- ggplot(data = long_meas_train_noNA_int, aes(x = months_in_followup_rounded, y = log2PSA)) +
+  geom_line(aes(group = patientId, color = treat_num), alpha = 0.4) + 
+  geom_line(data = statsMeanTreat, 
+            mapping = aes(x = months_in_followup_rounded, y = meanPSA, 
+                          color = therapy_received), linewidth = 0.8) +
+  geom_point(data = statsMeanTreat, 
+             mapping = aes(x = months_in_followup_rounded, y = meanPSA, 
+                           color = therapy_received, shape = therapy_received), size = 2) +
+  geom_errorbar(data = statsMeanTreat,
+                mapping = aes(x = months_in_followup_rounded, y = meanPSA,
+                              ymin = ci95lower, ymax = ci95upper, color = therapy_received), 
+                width = 0.5, alpha = 0.5, linewidth = 0.7) +
+  scale_color_manual(values = c('grey80', 'grey60', 'grey40', 'grey30',
+                                brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]),
+                     labels = c('ARSi', 'Taxane', 'PARPi', 'Platinum', 
+                                'ARSi', 'Taxane', 'PARPi', 'Platinum')) +
+  scale_shape_manual(values = c(15, 16, 17, 18)) + 
+  guides(colour = guide_legend(title = 'Treatment',
+                               override.aes = list(shape = c(rep(NA, 4), 15, 16, 17, 18),
+                                                   color = c('grey80', 'grey60', 'grey40', 'grey30',
+                                                             brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]))),
+         shape = 'none') + 
+  theme_bw() + 
+  theme(legend.position = 'bottom') +
+  labs(color = 'Treatment') +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) 
 
-mean.treat <- ggplot(statsMeanTreat, aes(x = months_in_followup_rounded, y = meanPSA, 
-                           color = therapy_received, shape = therapy_received)) +
-  geom_line() + 
-  geom_errorbar(aes(ymin = ci95lower, ymax = ci95upper), width = 0.5, alpha = 0.4) +
-  geom_point(size = 2) +
-  scale_color_manual(values = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]) +
-  scale_shape_manual(values = c(15, 16, 17, 18)) +
-  guides(colour = guide_legend(override.aes = list(shape = c(15, 16, 17, 18))),
-         shape = FALSE) + 
-  theme_bw() + 
-  labs(color = 'Treatment') +
-  xlab('Time in follow-up (months)') +
-  ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)')))
+mean.treat_withoutleg <- mean.treat_withleg + theme(legend.position = 'none')
 
 mean.treat.facet <- ggplot(statsMeanTreat, aes(x = months_in_followup_rounded, y = meanPSA, 
                            color = therapy_received, shape = therapy_received)) +
@@ -161,7 +166,7 @@ mean.treat.facet <- ggplot(statsMeanTreat, aes(x = months_in_followup_rounded, y
   geom_point(size = 1) +
   scale_color_manual(values = c('grey87', brewer.pal(name="Paired", n = 12)[c(1,3,5,7)])) +
   scale_shape_manual(values = c(15, 16, 17, 18)) +
-  guides(shape = FALSE) + 
+  guides(shape = 'none') + 
   theme_bw() + 
   theme(legend.position = 'none') +
   labs(color = 'Treatment') +
@@ -169,7 +174,7 @@ mean.treat.facet <- ggplot(statsMeanTreat, aes(x = months_in_followup_rounded, y
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) + 
   facet_wrap(~ therapy_received)
 
-rm(statsMean, statsMeanTreat)
+rm(statsMeanTreat, long_meas_train_noNA_int)
 
 ########################################
 ### plot(s) 4: correlation structure ###
@@ -282,77 +287,71 @@ setdiff(long_meas_train_noNA$patientId, c(unlist(types), unlist(nontypes)))
 setdiff(c(unlist(types), unlist(nontypes)), long_meas_train_noNA$patientId)
 
 # plot 
-trajectories.df <- left_join(
-  select(long_meas_train_noNA, patientId, PSA, log2PSA, months_in_followup, date_lab),
-  rbind(data.frame('patientId' = flat, 'trajectory' = 'Flat', 'category' = 'flat'),
-        data.frame('patientId' = decr_to_flat, 'trajectory' = 'Decrease, then flat', 'category' = 'flat'),
-        data.frame('patientId' = flatincr, 'trajectory' = 'Slow increase', 'category' = 'flat'),
-        data.frame('patientId' = flatcup, 'trajectory' = 'Cup-shape: flat', 'category' = 'flat'),
-        data.frame('patientId' = monotincr, 'trajectory' = 'Strictly monotonic increase', 'category' = 'increasing'),
-        data.frame('patientId' = flat_to_incr, 'trajectory' = 'Flat, then increase', 'category' = 'increasing'),
-        data.frame('patientId' = decr_to_INCR, 'trajectory' = 'Cup-shape: weak decrease, strong increase', 'category' = 'increasing'),
-        data.frame('patientId' = DECR_to_INCR, 'trajectory' = 'Cup-shape: pronounced', 'category' = 'increasing'),
-        data.frame('patientId' = DECR_to_flat, 'trajectory' = 'Strong decrease, then flat', 'category' = 'decreasing'),
-        data.frame('patientId' = incr_to_decr, 'trajectory' = 'Cap-shape', 'category' = 'decreasing'),
-        data.frame('patientId' = sshape, 'trajectory' = 'S-shape', 'category' = 'odd'),
-        data.frame('patientId' = two_meas, 'trajectory' = 'cat5a_2meas', 'category' = 'too_little_info'),
-        data.frame('patientId' = three_meas, 'trajectory' = 'cat5b_3meas', 'category' = 'too_little_info')),
-  by = 'patientId'
-) %>% 
-  filter(!is.na(log2PSA)) %>%
-  arrange(patientId, date_lab) %>%
-  mutate(trajectory = ifelse(patientId %in% c('KS1111', 'SG1010'), 'Strictly monotonic increase', trajectory),
-         category = ifelse(patientId %in% c('KS1111', 'SG1010'), 'increasing', category),
-         trajectory = factor(trajectory, levels = c('Flat', 'Decrease, then flat', 
-         'Slow increase', 'Cup-shape: flat', 'Cup-shape: weak decrease, strong increase',
-         'Cup-shape: pronounced', 'Flat, then increase', 'Strictly monotonic increase',
-         'Cap-shape', 'Strong decrease, then flat', 'S-shape')))
-
-ggs <- vector(mode = 'list', length = length(types))
-cats <- c('flat', 'increasing', 'decreasing', 'odd')
-pts <- c('UZG3006', 'UZG3007', 'UZG3025', 'UZG3027', 'UZG3004', 'STAV5107', 'SG1031','SG1068',
+pts <- c('UZG3006', 'UZG3007', 'UZG3025', 'UZG3027', 'STAV5107', 'SG1068', 'SG1031', 'UZG3004',  
          'ZOLG3403', 'STAV5112', 'KS1120', 'KS1121', 'UZG3012', 'CHUL3703', 'JESS3301', 'AHUS5006',
          'AZSJ3157', 'KS1111', 'RY1708','SG1010', 'UZG3013', 'ALES5302', 'KS1112', 'AK1209',
          'AHUS5008', 'AHUS5012', 'AK1218', 'RY1724', 'KS1117', 'SG1025', 'AK1214', 'RY1715',
          'CHUL3710', 'SG1073', 'NU1307', 'SG1047', 'KAR2413', 'UZG3018', 'UZG3028',
          'AZGR3504', 'SG1012', 'AZSJ3101', 'UZG3030')
-for(i in 1:length(cats)){
-  df.int <- trajectories.df[trajectories.df$category == cats[i]&
-                              trajectories.df$patientId %in% pts,]  %>%
-    arrange(trajectory) %>% 
-    mutate(patientId = factor(patientId, levels = pts))
-  ggs[[i]] <- ggplot(df.int, aes(x = months_in_followup, y = PSA, group = patientId, 
-                                 colour = patientId)) +
-    
-    facet_wrap(~ trajectory) +
-    geom_point() +
-    geom_line() +
-    coord_cartesian(ylim = c(0, 800),
-                    xlim = c(0, 36)) +
-    xlab('Time in follow-up (months)') +
-    ylab('PSA') +
-    theme_bw() +
-    theme(legend.position="none") +
-    scale_color_manual(values = brewer.pal(name="Paired", n = 12)[rep(1:4, 10)])
-}
+
+trajectories.df <- left_join(
+  select(long_meas_train_noNA, patientId, PSA, log2PSA, months_in_followup, date_lab),
+  rbind(data.frame('patientId' = flat, 'trajectory' = 'Flat: type a', 'category' = 'Flat'),
+        data.frame('patientId' = decr_to_flat, 'trajectory' = 'Flat: type b', 'category' = 'Flat'),
+        data.frame('patientId' = flatincr, 'trajectory' = 'Flat: type c', 'category' = 'Flat'),
+        data.frame('patientId' = flatcup, 'trajectory' = 'Flat: type d', 'category' = 'Flat'),
+        data.frame('patientId' = monotincr, 'trajectory' = 'Increasing: type d', 'category' = 'increasing'),
+        data.frame('patientId' = flat_to_incr, 'trajectory' = 'Increasing: type a', 'category' = 'increasing'),
+        data.frame('patientId' = decr_to_INCR, 'trajectory' = 'Increasing: type b', 'category' = 'increasing'),
+        data.frame('patientId' = DECR_to_INCR, 'trajectory' = 'Increasing: type c', 'category' = 'increasing'),
+        data.frame('patientId' = DECR_to_flat, 'trajectory' = 'Decreasing: type a', 'category' = 'decreasing'),
+        data.frame('patientId' = incr_to_decr, 'trajectory' = 'Decreasing: type b', 'category' = 'decreasing'),
+        data.frame('patientId' = sshape, 'trajectory' = 'S-shape', 'category' = 'odd'),
+        data.frame('patientId' = two_meas, 'trajectory' = 'cat5a_2meas', 'category' = 'too_little_info'),
+        data.frame('patientId' = three_meas, 'trajectory' = 'cat5b_3meas', 'category' = 'too_little_info')),
+  by = 'patientId'
+) %>% 
+  mutate(trajectory = ifelse(patientId %in% c('KS1111', 'SG1010'), 'Increasing: type d', trajectory),
+         category = ifelse(patientId %in% c('KS1111', 'SG1010'), 'increasing', category),
+         trajectory = factor(trajectory, levels = c(
+           'Flat: type a', 'Increasing: type a', 'Decreasing: type a',
+           'Flat: type b', 'Increasing: type b', 'Decreasing: type b',
+           'Flat: type c', 'Increasing: type c', 'S-shape',
+           'Flat: type d', 'Increasing: type d'))) %>%
+  filter(!is.na(log2PSA)) %>%
+  filter(patientId %in% pts) %>%
+  arrange(trajectory, patientId, date_lab) %>% 
+  mutate(patientId = factor(patientId, levels = pts))
+
+PSA_traj_types <- ggplot(trajectories.df[trajectories.df$patientId %in% pts,], 
+       aes(x = months_in_followup, y = PSA, group = patientId, colour = patientId)) +
+  facet_wrap(~ trajectory, nrow = 4, ncol = 3) +
+  geom_point() +
+  geom_line() +
+  coord_cartesian(ylim = c(0, 800),
+                  xlim = c(0, 36)) +
+  xlab('Time in follow-up (months)') +
+  ylab('PSA (ng/ml)') +
+  theme_bw() +
+  theme(legend.position="none") +
+  scale_color_manual(values = brewer.pal(name="Paired", n = 12)[rep(1:4, 11)])
 
 rm(flat, decr_to_flat, flatincr, flatcup, monotincr, flat_to_incr, decr_to_INCR, 
    DECR_to_INCR, DECR_to_flat, incr_to_decr, sshape, two_meas, three_meas,
-   types, nontypes, trajectories.df, cats, pts, df.int)
+   types, nontypes, trajectories.df, pts, df.int)
 
 ####################
 ### export plots ### 
 #################### 
 
 plots <- list(hist1, hist2, box, spag.tot, spag.tot.log, spag.treat, reverse.event, 
-           mean.tot, mean.treat, mean.treat.facet, paircor, ggs[[1]], ggs[[2]], 
-           ggs[[3]], ggs[[4]]) 
+           mean.treat_withoutleg, mean.treat_withleg, mean.treat.facet, paircor, 
+           PSA_traj_types) 
 
 filenames <- c('hist_PSA', 'hist_PSA_log', 'box_PSA_treat', 'spaghetti_PSA',
                'spaghetti_PSA_log', 'spaghetti_PSA_log_treat', 'reverse_PSA_event',
-               'mean_PSA', 'mean_PSA_treat', 'mean_PSA_treat_facet', 'pairs',
-               'trajectories_PSA_flat', 'trajectories_PSA_increasing', 
-               'trajectories_PSA_decreasing', 'trajectories_PSA_sshape')
+               'mean_PSA_treat', 'mean_PSA_treat_legend', 'mean_PSA_treat_facet', 'pairs',
+               'trajectories_PSA')
 
 for (i in 1:length(plots)){  
   file_name = paste("C:/Users/lanbro/Documents/Figures/Q1/", filenames[i], ".pdf", sep="")
