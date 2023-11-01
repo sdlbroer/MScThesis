@@ -195,7 +195,7 @@ long_meas <- bind_rows(
          months_in_followup_rounded = round(months_in_followup, 0),
          reverse_time = months_in_followup - time_obs,
          reverse_time_rounded = months_in_followup_rounded - round(time_obs, 0),
-         log2PSA = log(PSA + 0.01, 2)
+         log2PSA = log(PSA + 0.001, 2)
   ) %>%
   arrange(patientId, date_lab)
 
