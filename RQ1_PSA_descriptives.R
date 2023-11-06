@@ -226,30 +226,30 @@ flat <- c('UZG3006', 'UZG3007', 'UZG3025', 'UZG3027', 'OLVA4005',
 decr_to_flat <- c('UZG3004', 'STAV5107', 'SG1031','SG1068', 'KS1114', 'NU1304',
                   'NU1316', 'SU2014', 'RY1734', 'KAR2406','KAR2416', 'SG1035', 
                   'CHUL3712', 'AZGR3501', 'AZSJ3155', 'SG1014', 'SU2030')
-## category 1c: flat into weak increase
-flatcup <- c('ZOLG3403', 'STAV5112', 'KS1120', 'KS1121', 'NU1309', 'SG1018', 
-             'AK1223', 'KAR2412', 'RY1712', 'RY1707', 'SG1043', 'KS1113', 'VX2207', 
-             'RY1717', 'AHUS5010', 'CHUL3713', 'UZG3017', 
-             'UZG3021', 'AHUS5009')
-## category 1d: flat cup
+## category 1c: flat cup
 flatincr <- c('UZG3012', 'CHUL3703', 'JESS3301', 'AHUS5006', 'SG1049', 'KS1101',
               'KS1116', 'KS1118', 'AK1205', 'AK1213', 'AK1221', 'NU1311', 'SU2007', 
               'SU2013', 'RY1710', 'RY1718', 'RY1726', 'VX2204', 'SG1027', 'SG1006',
               'SG1008')
+## category 1d: flat into weak increase
+flatcup <- c('ZOLG3403', 'STAV5112', 'KS1120', 'KS1121', 'NU1309', 'SG1018', 
+             'AK1223', 'KAR2412', 'RY1712', 'RY1707', 'SG1043', 'KS1113', 'VX2207', 
+             'RY1717', 'AHUS5010', 'CHUL3713', 'UZG3017', 
+             'UZG3021', 'AHUS5009')
 
 # category 2: increasing trajectories
-## category 2a: strictly monotonic increase
-monotincr <- c('STAV5104', 'SG1019', 'NU1301', 'SU2004', 'RY1708', 
-               'SG1007', 'AZSJ3157', 'VX2203')
-## category 2b: flat, then strong increase
+## category 2a: flat, then strong increase
 flat_to_incr <- c('UZG3013', 'ALES5302', 'KS1112', 'AK1209', 'SU2008', 'SU2011', 
                   'RY1704', 'RY1711', 'RY1719', 'RY1721', 'NU1302', 'SG1028', 
                   'AK1219', 'OLVA4010')
-## category 2c: weak decrease into strong increase
+## category 2b: weak decrease into strong increase
 decr_to_INCR <- c('AHUS5008', 'AHUS5012', 'AK1218', 'KAR2411', 'RY1724', 
                   'KS1106', 'NU1312', 'KS1103', 'AZSJ3160')
-## category 2d: strong decrease into strong increase
+## category 2c: strong decrease into strong increase
 DECR_to_INCR <- c('KS1117', 'SG1025', 'AK1214', 'RY1715', 'SU2015', 'NU1320')
+## category 2d: strictly monotonic increase
+monotincr <- c('STAV5104', 'SG1019', 'NU1301', 'SU2004', 'RY1708', 
+               'SG1007', 'AZSJ3157', 'VX2203')
 
 # category 3: decreasing trajectories
 ## category 3a: strong decrease into flat
@@ -266,14 +266,14 @@ sshape <- c('AZGR3504', 'SG1012', 'AZSJ3101', 'UZG3030', 'AK1202', 'AK1220')
 two_meas <- c('UZG3005', 'OLVA4012', 'AZSLB3603', 'STAV5113', 'SG1015', 'SG1026', 
               'AK1204')
 ## category 5b: only three measurements
-three_meas <- c('UZG3023', # decr_to_flat
-                'UZG3022', 'SG1002', 'KS1123', 'AK1226', 'NU1303', 'NU1306', 
+three_meas <- c('UZG3022', 'SG1002', 'KS1123', 'AK1226', 'NU1303', 'NU1306', 
                 'SU2029', 'VX2205', 'AK1222',  # flat
+                'UZG3023', # decr_to_flat
+                'NU1321', 'FALU1505', # flatincr
                 'ZOLG3402', 'STAV5103', 'STAV5106', 'AK1224', 'NU1315', 'RY1705', 
                 'RY1733', 'VX2209', 'KS1109', 'KS1111', 'STAV5114', 'SG1016', 
                 'SG1011', 'SG1010', # monotincr
                 'NIKO3201', 'SU2010', # incr_to_decr
-                'NU1321', 'FALU1505', # flatincr
                 'RY1730') # noncategorizable
 
 # check that all patients are categorized
