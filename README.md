@@ -7,7 +7,7 @@ The data used in this project is part of the ProBio trial (Karolinska Insititute
 The repository contains ... files:
 * **data_management**: loads all relevant dataframes and performs initial preparation of the most used dataframes;
 * **descriptive_statistics**: general descriptive statistics on the patient population;
-* **RQ1_PSA_descriptives**: produces all descriptive statistics (including plots) to answer the first research question, which focuses on exploring the PSA trajectories;
-* **RQ1_exploration_trajectories**: explores the different types of Prostate-Specific Antigen (PSA) trajectories for patients in the ProBio trial;
+* **RQ1_PSA_descriptives**: produces all descriptive statistics (including plots) to answer the first research question, which focuses on exploring the Prostate-Specific Antigen (PSA) trajectories;
+* **RQ1_exploration_trajectories**: explores the different types of PSA trajectories for patients in the ProBio trial;
 * **RQ2_explanatory_model_JMbayes**: fits a number of joint models to explore the relationship between repeated measurements of PSA and the survival outcome No-Longer Clinical Benefit (NLCB);
 * **RQ2_explanatory_model_timedependentCox**: fits a time-dependent Cox model to explore the relationship between PSA and NLCB. 
