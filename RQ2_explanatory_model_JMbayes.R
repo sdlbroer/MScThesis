@@ -176,7 +176,7 @@ compare_jm(model1_quad_joint, model2_quad_joint, model3_quad_joint,
 
 compare_jm(model5_lmm_joint, # time-dependent association with splines (3 knots)
            model4_mm1int_joint, # time-dependent association with splines (2 knots)
-           model4_mm2int_joint, # time-dependent association wmith splines (3 knots)
+           model4_mm2int_joint, # time-dependent association with splines (2 knots)
            model4_mm3int_joint, # time-dependent association with splines (2 knots)
            model4_quad_joint) # time-dependent association with splines (2 knots)
 
