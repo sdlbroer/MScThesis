@@ -1,8 +1,9 @@
-# first run the data_management file written by me
-
 ###########################
 ### prepare environment ###
 ###########################
+
+# load data
+source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2')
 
 # load libraries 
 library(nlme) # fit the mixed model
