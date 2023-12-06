@@ -191,10 +191,10 @@ long_meas <- bind_rows(
   # remove after checks
   mutate(therapy_class = as.character(therapy_class),
          therapy_received = factor(therapy_received, levels = c('ARSi', 'Taxane', 'PARPi', 'Platinum')),
-         months_in_followup = as.numeric(date_lab - baseline_date)/(365.25/12),
-         months_in_followup_rounded = round(months_in_followup, 0),
-         reverse_time = months_in_followup - time_obs,
-         reverse_time_rounded = months_in_followup_rounded - round(time_obs, 0),
+         time = as.numeric(date_lab - baseline_date)/(365.25/12),
+         time_rounded = round(time, 0),
+         reverse_time = time - time_obs,
+         reverse_time_rounded = time_rounded - round(time_obs, 0),
          log2PSA = log(PSA + 0.001, 2)
   ) %>%
   arrange(patientId, date_lab)
