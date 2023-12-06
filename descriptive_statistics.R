@@ -2,7 +2,8 @@
 ### prepare environment ###
 ###########################
 
-# first run the data_management file
+# load data
+source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
 
 # load libraries 
 library(tableone) # to create table 1
