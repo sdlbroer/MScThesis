@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2')
+source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
 
 # load libraries 
 library(nlme) # fit the mixed model
@@ -26,8 +26,7 @@ set.seed(1803158)
 psa_long_train <- psa_long_train %>%
   filter(!is.na(PSA)) %>% 
   left_join(select(psa_long[psa_long$visit == 'Treatment start',], patientId, 
-                   baseline_date = date_lab), by = 'patientId') %>%
-  mutate(months_in_followup = as.numeric(date_lab - baseline_date)/(365.25/12))
+                   baseline_date = date_lab), by = 'patientId')
 
 # create dataframe with only the survival data 
 survdata <- baseline_data_table1[baseline_data_table1$id_num %in% long_meas_train$id_num,] %>%
@@ -45,33 +44,33 @@ model_surv <- coxph(Surv(time_obs, NLCB_overall_num) ~ therapy_received,
 #######################
 
 # lmm
-model1_longit <- lme(fixed = log2PSA ~ months_in_followup + therapy_received:months_in_followup, 
-                     random = ~ months_in_followup | id_num,
+model1_longit <- lme(fixed = log2PSA ~ time + therapy_received:time, 
+                     random = ~ time | id_num,
                      data = psa_long_train,
                      na.action = na.omit)
 
 # mm with splines and 1 knot
-model2_longit <- lme(fixed = log2PSA ~ ns(months_in_followup, k = c(2), B = c(0, 35.5))*therapy_received, 
-                     random = ~ ns(months_in_followup, k = c(2), B = c(0, 35.5)) | id_num,
+model2_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2), B = c(0, 35.5))*therapy_received, 
+                     random = ~ ns(time, k = c(2), B = c(0, 35.5)) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
 # mm with splines and 2 knots
-model3_longit <- lme(fixed = log2PSA ~ ns(months_in_followup, k = c(2, 4), B = c(0, 35.5))*therapy_received, 
-                     random = ~ ns(months_in_followup, k = c(2, 4), B = c(0, 35.5)) | id_num,
+model3_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2, 4), B = c(0, 35.5))*therapy_received, 
+                     random = ~ ns(time, k = c(2, 4), B = c(0, 35.5)) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
 
 # mm with splines and 3 knots
-model4_longit <- lme(fixed = log2PSA ~ ns(months_in_followup, k = c(2, 4, 6), B = c(0, 35.5))*therapy_received, 
-                     random = ~ ns(months_in_followup, k = c(2, 4, 6), B = c(0, 35.5)) | id_num,
+model4_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2, 4, 6), B = c(0, 35.5))*therapy_received, 
+                     random = ~ ns(time, k = c(2, 4, 6), B = c(0, 35.5)) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
 # mm with quadratic time  
-model5_longit <- lme(fixed = log2PSA ~ poly(months_in_followup, 2)*therapy_received, 
-                     random = ~ poly(months_in_followup, 2) | id_num,
+model5_longit <- lme(fixed = log2PSA ~ poly(time, 2)*therapy_received, 
+                     random = ~ poly(time, 2) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
@@ -81,17 +80,17 @@ model5_longit <- lme(fixed = log2PSA ~ poly(months_in_followup, 2)*therapy_recei
 
 # functional forms 
 ## time-varying association 1
-form_splines1 <- ~ value(log2PSA) * ns(months_in_followup, k = c(4), B = c(0, 35.5))
+form_splines1 <- ~ value(log2PSA) * ns(time, k = c(4), B = c(0, 35.5))
 ## time-varying association 2
-form_splines2 <- ~ value(log2PSA) * ns(months_in_followup, k = c(2, 4), B = c(0, 35.5))
+form_splines2 <- ~ value(log2PSA) * ns(time, k = c(2, 4), B = c(0, 35.5))
 ## time-varying association 3
-form_splines3 <- ~ value(log2PSA) * ns(months_in_followup, k = c(2, 4, 6), B = c(0, 35.5))
+form_splines3 <- ~ value(log2PSA) * ns(time, k = c(2, 4, 6), B = c(0, 35.5))
 ## current-value + slope
 form_slope <- ~ value(log2PSA) + slope(log2PSA, eps = 1, direction = 'back')
 
 # lmm
 ## current-value association
-model1_lmm_joint <- jm(model_surv, model1_longit, time_var = "months_in_followup")
+model1_lmm_joint <- jm(model_surv, model1_longit, time_var = "time")
 ## current-value + slope association 
 model2_lmm_joint <- update(model1_lmm_joint, functional_forms = form_slope)
 ## time-varying association 1
@@ -103,7 +102,7 @@ model5_lmm_joint <- update(model1_lmm_joint, functional_forms = form_splines3)
 
 # mm with splines and 1 internal knot 
 ## current-value association
-model1_mm1int_joint <- jm(model_surv, model2_longit, time_var = "months_in_followup")
+model1_mm1int_joint <- jm(model_surv, model2_longit, time_var = "time")
 ## current-value + slope association 
 model2_mm1int_joint <- update(model1_mm1int_joint, functional_forms = form_slope)
 ## time-varying association 1
@@ -115,7 +114,7 @@ model5_mm1int_joint <- update(model1_mm1int_joint, functional_forms = form_splin
 
 # mm with splines and 2 internal knots
 ## current-value association
-model1_mm2int_joint <- jm(model_surv, model3_longit, time_var = "months_in_followup")
+model1_mm2int_joint <- jm(model_surv, model3_longit, time_var = "time")
 ## current-value + slope association 
 model2_mm2int_joint <- update(model1_mm2int_joint, functional_forms = form_slope)
 ## time-varying association 1
@@ -127,7 +126,7 @@ model5_mm2int_joint <- update(model1_mm2int_joint, functional_forms = form_splin
 
 # mm with splines and 3 internal knots
 ## current-value association
-model1_mm3int_joint <- jm(model_surv, model4_longit, time_var = "months_in_followup")
+model1_mm3int_joint <- jm(model_surv, model4_longit, time_var = "time")
 ## current-value + slope association 
 model2_mm3int_joint <- update(model1_mm3int_joint, functional_forms = form_slope)
 ## time-varying association 1
@@ -139,7 +138,7 @@ model5_mm3int_joint <- update(model1_mm3int_joint, functional_forms = form_splin
 
 # mm with time modelled quadratic
 ## current-value association
-model1_quad_joint <- jm(model_surv, model5_longit, time_var = "months_in_followup")
+model1_quad_joint <- jm(model_surv, model5_longit, time_var = "time")
 ## current-value + slope association 
 model2_quad_joint <- update(model1_quad_joint, functional_forms = form_slope)
 ## time-varying association 1
