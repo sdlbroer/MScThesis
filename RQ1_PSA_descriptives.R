@@ -1,4 +1,9 @@
-# first run the data_management_v6 file
+###########################
+### prepare environment ###
+###########################
+
+# load data
+source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
 
 # load libraries 
 library(ggplot2) # create plots
@@ -25,8 +30,8 @@ summary(long_meas_train$PSA)
 tapply(long_meas_train$PSA, long_meas_train$therapy_received, summary)
 
 # summary of follow-up times
-summary((arrange(long_meas_train, patientId, desc(months_in_followup)) %>% 
-  filter(!duplicated(patientId)))$months_in_followup)
+summary((arrange(long_meas_train, patientId, desc(time)) %>% 
+  filter(!duplicated(patientId)))$time)
 
 #######################################
 ### plot(s) 1: histograms + boxplot ###
@@ -50,7 +55,7 @@ hist2 <- ggplot(long_meas_train_noNA, aes(x=log2PSA)) +
   ylab('Count')
 
 # box plot 
-box <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2PSA, 
+box <- ggplot(data = long_meas_train_noNA, aes(x = time, y = log2PSA, 
                                    fill = therapy_received)) +
   geom_boxplot() +
   theme_bw() + 
@@ -65,7 +70,7 @@ box <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2P
 ##################################
 
 # with LOESS smoothing
-spag.tot <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = PSA)) + 
+spag.tot <- ggplot(data = long_meas_train_noNA, aes(x = time, y = PSA)) + 
   geom_line(aes(group = patientId, colour = patientId)) +
   geom_smooth(colour = 'black') +
   theme_bw() + 
@@ -74,7 +79,7 @@ spag.tot <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = 
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) # all observations
 
-spag.tot.log <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2PSA)) + 
+spag.tot.log <- ggplot(data = long_meas_train_noNA, aes(x = time, y = log2PSA)) + 
   geom_line(aes(group = patientId, colour = patientId)) +
   geom_smooth(colour = 'black') +
   scale_colour_manual(values = brewer.pal(name="PuBu", n = 9)[rep(4:9, 31)]) + 
@@ -83,7 +88,7 @@ spag.tot.log <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, 
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) # all observations
 
-spag.treat <- ggplot(data = long_meas_train_noNA, aes(x = months_in_followup, y = log2PSA)) + 
+spag.treat <- ggplot(data = long_meas_train_noNA, aes(x = time, y = log2PSA)) + 
   geom_line(aes(group = patientId, colour = therapy_received)) +
   geom_smooth(colour = 'black') +
   theme_bw() +
@@ -111,7 +116,7 @@ reverse.event <- ggplot(data = long_meas_train_noNA, aes(x = reverse_time, y = l
 
 # dataframe with the mean information per treatment
 statsMeanTreat <- long_meas_train_noNA %>%
-  group_by(therapy_received, months_in_followup_rounded) %>%
+  group_by(therapy_received, time) %>%
   summarise(
     count = n(),
     meanPSA = mean(log2PSA,na.rm=TRUE),
@@ -126,16 +131,16 @@ long_meas_train_noNA_int <- long_meas_train_noNA %>%
   mutate(treat_num = as.character(as.numeric(therapy_received)))
 
 # mean profile plot
-mean.treat_withleg <- ggplot(data = long_meas_train_noNA_int, aes(x = months_in_followup_rounded, y = log2PSA)) +
+mean.treat_withleg <- ggplot(data = long_meas_train_noNA_int, aes(x = time, y = log2PSA)) +
   geom_line(aes(group = patientId, color = treat_num), alpha = 0.4) + 
   geom_line(data = statsMeanTreat, 
-            mapping = aes(x = months_in_followup_rounded, y = meanPSA, 
+            mapping = aes(x = time, y = meanPSA, 
                           color = therapy_received), linewidth = 0.8) +
   geom_point(data = statsMeanTreat, 
-             mapping = aes(x = months_in_followup_rounded, y = meanPSA, 
+             mapping = aes(x = time, y = meanPSA, 
                            color = therapy_received, shape = therapy_received), size = 2) +
   geom_errorbar(data = statsMeanTreat,
-                mapping = aes(x = months_in_followup_rounded, y = meanPSA,
+                mapping = aes(x = time, y = meanPSA,
                               ymin = ci95lower, ymax = ci95upper, color = therapy_received), 
                 width = 0.5, alpha = 0.5, linewidth = 0.7) +
   scale_color_manual(values = c('grey80', 'grey60', 'grey40', 'grey30',
@@ -156,9 +161,9 @@ mean.treat_withleg <- ggplot(data = long_meas_train_noNA_int, aes(x = months_in_
 
 mean.treat_withoutleg <- mean.treat_withleg + theme(legend.position = 'none')
 
-mean.treat.facet <- ggplot(statsMeanTreat, aes(x = months_in_followup_rounded, y = meanPSA, 
+mean.treat.facet <- ggplot(statsMeanTreat, aes(x = time, y = meanPSA, 
                            color = therapy_received, shape = therapy_received)) +
-  geom_line(aes(x = months_in_followup_rounded, y = log2PSA, group = patientId, 
+  geom_line(aes(x = time, y = log2PSA, group = patientId, 
                 color = ''), 
             data = long_meas_train_noNA) +
   geom_line() + 
@@ -182,21 +187,21 @@ rm(statsMeanTreat, long_meas_train_noNA_int)
 
 # dataframe with rounded measurement times 
 meas <- long_meas_train_noNA %>%
-  select(id_num, log2PSA, months_in_followup) %>% 
-  mutate(months_in_followup = round(months_in_followup, 0)) %>%
-  filter(months_in_followup %in% c(0,1,2,4,6,9,12,15))
+  select(id_num, log2PSA, time) %>% 
+  mutate(time = round(time, 0)) %>%
+  filter(time %in% c(0,1,2,4,6,9,12,15))
 
 full.df <- data.frame('id_num' = sort(rep(unique(meas$id_num), 8)),
-                      'months_in_followup' = rep(c(0,1,2,4,6,9,12,15), 184))
+                      'time' = rep(c(0,1,2,4,6,9,12,15), 184))
 
 psa_wide_train <- unique(left_join(full.df, meas)) %>%
-  mutate(unique_id = paste(id_num, months_in_followup)) %>%
+  mutate(unique_id = paste(id_num, time)) %>%
   filter(!duplicated(unique_id)) %>%
-  select(id_num, months_in_followup, log2PSA)
+  select(id_num, time, log2PSA)
 
 # wide format 
 psa_wide_train <- reshape(psa_wide_train, idvar = 'id_num', 
-                          timevar = 'months_in_followup', direction = "wide")
+                          timevar = 'time', direction = "wide")
 
 paircor <- ggpairs(psa_wide_train, columns = 2:9, 
         upper = list(continuous = wrap("cor", size=3, stars = F)),
@@ -295,7 +300,7 @@ pts <- c('UZG3006', 'UZG3007', 'UZG3025', 'UZG3027', 'STAV5107', 'SG1068', 'SG10
          'AZGR3504', 'SG1012', 'AZSJ3101', 'UZG3030')
 
 trajectories.df <- left_join(
-  select(long_meas_train_noNA, patientId, PSA, log2PSA, months_in_followup, date_lab),
+  select(long_meas_train_noNA, patientId, PSA, log2PSA, time, date_lab),
   rbind(data.frame('patientId' = flat, 'trajectory' = 'Flat: type a', 'category' = 'Flat'),
         data.frame('patientId' = decr_to_flat, 'trajectory' = 'Flat: type b', 'category' = 'Flat'),
         data.frame('patientId' = flatincr, 'trajectory' = 'Flat: type c', 'category' = 'Flat'),
@@ -324,7 +329,7 @@ trajectories.df <- left_join(
   mutate(patientId = factor(patientId, levels = pts))
 
 PSA_traj_types <- ggplot(trajectories.df[trajectories.df$patientId %in% pts,], 
-       aes(x = months_in_followup, y = PSA, group = patientId, colour = patientId)) +
+       aes(x = time, y = PSA, group = patientId, colour = patientId)) +
   facet_wrap(~ trajectory, nrow = 4, ncol = 3) +
   geom_point() +
   geom_line() +
@@ -338,7 +343,7 @@ PSA_traj_types <- ggplot(trajectories.df[trajectories.df$patientId %in% pts,],
 
 rm(flat, decr_to_flat, flatincr, flatcup, monotincr, flat_to_incr, decr_to_INCR, 
    DECR_to_INCR, DECR_to_flat, incr_to_decr, sshape, two_meas, three_meas,
-   types, nontypes, trajectories.df, pts, df.int)
+   types, nontypes, trajectories.df, pts)
 
 ####################
 ### export plots ### 
