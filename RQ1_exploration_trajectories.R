@@ -1,3 +1,11 @@
+###########################
+### prepare environment ###
+###########################
+
+# load data
+source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
+
+# load libraries
 library('ggpubr')
 
 ################################
@@ -13,7 +21,7 @@ trajectories.df <- long_meas_train %>% filter(!is.na(PSA))
 #ptids <- unique(trajectories.df$patientId)
 #for(i in 1:27){
 #  print(arrange(trajectories.df[trajectories.df$patientId %in% ptids[(1 + (i-1)*9):((i-1)*9 + 9)],], patientId, date_lab) %>%
-#          ggplot(aes(x = months_in_followup, y = PSA)) +
+#          ggplot(aes(x = time, y = PSA)) +
 #          geom_point() +
 #          geom_line() +
 #          # coord_cartesian(ylim = c(0, 500)) +
@@ -120,7 +128,7 @@ ggs <- vector(mode = 'list', length = length(types))
 for(i in 1:length(types)){
   ggs[[i]] <- arrange(trajectories.df[trajectories.df$patientId %in% types[[i]],], 
                       patientId, date_lab) %>%
-    ggplot(aes(x = months_in_followup, y = PSA, group = patientId, colour = patientId)) +
+    ggplot(aes(x = time, y = PSA, group = patientId, colour = patientId)) +
     geom_point() +
     geom_line() +
     coord_cartesian(ylim = c(0, 700),
@@ -143,7 +151,7 @@ ggs.lowess <- vector(mode = 'list', length = length(types))
 for(i in 1:length(types)){
   ggs.lowess[[i]] <- arrange(trajectories.df[trajectories.df$patientId %in% types[[i]],], 
                       patientId, date_lab) %>%
-    ggplot(aes(x = months_in_followup, y = PSA)) +
+    ggplot(aes(x = time, y = PSA)) +
     geom_line(aes(colour = patientId), alpha = .3) +
     geom_point(aes(colour = patientId), alpha = .3) +
     geom_smooth(colour = 'black') +
