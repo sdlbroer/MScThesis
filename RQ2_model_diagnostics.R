@@ -1,5 +1,12 @@
-# first run the data_managament file, followed by the explanatory_model_JMbayes file
+###########################
+### prepare environment ###
+###########################
 
+# load data
+source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
+
+# load models 
+source('C:/Users/lanbro/Documents/Scripts/RQ2_explanatory/explanatory_model_JMbayes_v22.R')
 models <- list(model1_longit, model2_longit, model3_longit, model4_longit,
                model5_longit)
 
@@ -11,7 +18,7 @@ models <- list(model1_longit, model2_longit, model3_longit, model4_longit,
 cox.zph(model_surv)
 
 # influential diagnostics
-outliers.Cox <- ggcoxdiagnostics(model_surv, type = "deviance",
+outliers.Cox <- ggcoxdiagnostics(model_surv, type = 'deviance',
                                  linear.predictions = FALSE, ggtheme = theme_bw(),
                                  xlab = 'Patient ID', ylab = 'Residuals (deviance)')
 
@@ -24,7 +31,7 @@ linrel <- vector(mode = 'list', length = 5)
 
 for(i in 1:5){
   linrel[[i]] <- ggplot(data.frame(months_in_followup = models[[i]]$data$months_in_followup, 
-                                   pearson = residuals(models[[i]],type = "pearson")),
+                                   pearson = residuals(models[[i]],type = 'pearson')),
                         aes(x = months_in_followup,y = pearson)) +
     geom_point() +
     theme_bw() +
@@ -44,7 +51,7 @@ for(i in 1:5){
   pdfname <- paste0('C:/Users/lanbro/Documents/Figures/Q2/mm/model', i, '_qqplot.pdf')
   pdf(pdfname, height = 5, width = 8)
   qqPlot(residuals(models[[i]]),
-         col.lines = brewer.pal(name = "Paired", n = 12)[2],
+         col.lines = brewer.pal(name = 'Paired', n = 12)[2],
          xlab = 'Normal quantiles', ylab = 'Standardized residuals')
   dev.off()
 }
@@ -55,7 +62,7 @@ cooksdist <- vector(mode = 'list', length = 5)
 
 for(i in 1:5){
   infl <- hlm_influence(models[[i]])
-  cooksdist[[i]] <- dotplot_diag(infl$cooksd, name = "cooks.distance", cutoff = "internal") +
+  cooksdist[[i]] <- dotplot_diag(infl$cooksd, name = 'cooks.distance', cutoff = 'internal') +
     theme_bw() + 
     theme(legend.position = 'none') + 
     ylab('Cooks distance') + 
@@ -71,7 +78,7 @@ for(i in 1:5){
                                                  fittedval = fitted(models[[i]])),
                                aes(x = fittedval, y = observed)) + 
     geom_point() + 
-    geom_abline(colour = brewer.pal(name = "Paired", n = 12)[2]) + 
+    geom_abline(colour = brewer.pal(name = 'Paired', n = 12)[2]) + 
     theme_bw() + 
     xlab('Fitted values') + 
     ylab('Observed values')
