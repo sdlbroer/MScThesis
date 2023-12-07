@@ -50,21 +50,20 @@ model1_longit <- lme(fixed = log2PSA ~ time + therapy_received:time,
                      na.action = na.omit)
 
 # mm with splines and 1 knot
-model2_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2), B = c(0, 35.5))*therapy_received, 
-                     random = ~ ns(time, k = c(2), B = c(0, 35.5)) | id_num,
+model2_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2), B = c(0, 18.5))*therapy_received, 
+                     random = ~ ns(time, k = c(2), B = c(0, 18.5)) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
 # mm with splines and 2 knots
-model3_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2, 4), B = c(0, 35.5))*therapy_received, 
-                     random = ~ ns(time, k = c(2, 4), B = c(0, 35.5)) | id_num,
+model3_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2, 4), B = c(0, 18.5))*therapy_received, 
+                     random = ~ ns(time, k = c(2, 4), B = c(0, 18.5)) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
-
 # mm with splines and 3 knots
-model4_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2, 4, 6), B = c(0, 35.5))*therapy_received, 
-                     random = ~ ns(time, k = c(2, 4, 6), B = c(0, 35.5)) | id_num,
+model4_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2, 4, 6), B = c(0, 18.5))*therapy_received, 
+                     random = ~ ns(time, k = c(2, 4, 6), B = c(0, 18.5)) | id_num,
                      data = psa_long_train,
                      control = lmeControl(opt = 'optim'))
 
@@ -80,11 +79,11 @@ model5_longit <- lme(fixed = log2PSA ~ poly(time, 2)*therapy_received,
 
 # functional forms 
 ## time-varying association 1
-form_splines1 <- ~ value(log2PSA) * ns(time, k = c(4), B = c(0, 35.5))
+form_splines1 <- ~ value(log2PSA) * ns(time, k = c(4), B = c(0, 18.5))
 ## time-varying association 2
-form_splines2 <- ~ value(log2PSA) * ns(time, k = c(2, 4), B = c(0, 35.5))
+form_splines2 <- ~ value(log2PSA) * ns(time, k = c(2, 4), B = c(0, 18.5))
 ## time-varying association 3
-form_splines3 <- ~ value(log2PSA) * ns(time, k = c(2, 4, 6), B = c(0, 35.5))
+form_splines3 <- ~ value(log2PSA) * ns(time, k = c(2, 4, 6), B = c(0, 18.5))
 ## current-value + slope
 form_slope <- ~ value(log2PSA) + slope(log2PSA, eps = 1, direction = 'back')
 
@@ -174,14 +173,14 @@ compare_jm(model1_mm3int_joint, model2_mm3int_joint, model3_mm3int_joint,
 compare_jm(model1_quad_joint, model2_quad_joint, model3_quad_joint,
            model4_quad_joint, model5_quad_joint)
 
-compare_jm(model5_lmm_joint, # time-dependent association with splines (3 knots)
-           model4_mm1int_joint, # time-dependent association with splines (2 knots)
-           model4_mm2int_joint, # time-dependent association with splines (2 knots)
+compare_jm(model4_lmm_joint, # time-dependent association with splines (3 knots)
+           model5_mm1int_joint, # time-dependent association with splines (2 knots)
+           model5_mm2int_joint, # time-dependent association with splines (2 knots)
            model4_mm3int_joint, # time-dependent association with splines (2 knots)
-           model4_quad_joint) # time-dependent association with splines (2 knots)
+           model5_quad_joint) # time-dependent association with splines (2 knots)
 
-round(summary(model5_lmm_joint)$Survival, 2) # linear mixed, alpha(t), 3 knots
+round(summary(model4_lmm_joint)$Survival, 2) # linear mixed, alpha(t), 3 knots
+round(summary(model5_mm1int_joint)$Survival, 2) # splines mixed (1 knot), alpha(t), 2 knots
+round(summary(model5_quad_joint)$Survival, 2) # quadratic mixed, alpha(t), 2 knots
 round(summary(model4_mm3int_joint)$Survival, 2) # splines mixed (3 knots), alpha(t), 2 knots
-round(summary(model4_mm2int_joint)$Survival, 2) # splines mixed (2 knot), alpha(t), 2 knots
-round(summary(model4_mm1int_joint)$Survival, 2) # splines mixed (1 knots), alpha(t), 2 knots
-round(summary(model4_quad_joint)$Survival, 2) # quadratic mixed, alpha(t), 2 knots
+round(summary(model5_mm2int_joint)$Survival, 2) # splines mixed (2 knots), alpha(t), 2 knots
