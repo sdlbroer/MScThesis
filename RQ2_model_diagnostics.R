@@ -2,13 +2,9 @@
 ### prepare environment ###
 ###########################
 
-# load data
-source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
-
 # load models 
-source('C:/Users/lanbro/Documents/Scripts/RQ2_explanatory/explanatory_model_JMbayes_v24.R')
-models <- list(model1_longit, model2_longit, model3_longit, model4_longit,
-               model5_longit)
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/RQ2_explanatory/explanatory_model_JMbayes_v25.R')
+models <- list(model1_longit, model2_longit, model3_longit, model4_longit, model5_longit)
 
 #################
 ### Cox model ###
@@ -48,7 +44,7 @@ for(i in 1:5){
 
 # normally distributed errors 
 for(i in 1:5){
-  pdfname <- paste0('C:/Users/lanbro/Documents/Figures/Q2/mm/model', i, '_qqplot.pdf')
+  pdfname <- paste0('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/mm/model', i, '_qqplot.pdf')
   pdf(pdfname, height = 5, width = 8)
   qqPlot(residuals(models[[i]]),
          col.lines = brewer.pal(name = 'Paired', n = 12)[2],
@@ -322,7 +318,7 @@ plots <- list(outliers.Cox)
 filenames <- c('outliers_Cox')
 
 for (i in 1:length(plots)){  
-  file_name = paste('C:/Users/lanbro/Documents/Figures/Q2/surv/', filenames[i], '.pdf', sep='')
+  file_name = paste('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/surv/', filenames[i], '.pdf', sep='')
   pdf(file_name, height = 5, width = 8)
   print(plots[[i]])
   dev.off()
@@ -347,7 +343,7 @@ filenames <- c('model1_linear_relationship', 'model2_linear_relationship',
                'fitted_trajectories_random_pts', 'fitted_trajectories_treat')
 
 for (i in 1:length(plots)){  
-  file_name = paste('C:/Users/lanbro/Documents/Figures/Q2/mm/', filenames[i], '.pdf', sep='')
+  file_name = paste('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/mm/', filenames[i], '.pdf', sep='')
   pdf(file_name, height = 5, width = 8)
   print(plots[[i]])
   dev.off()
@@ -373,7 +369,7 @@ filenames <- c('lmm_timevarying1', 'mm1knot_timevarying1',
                'mmquad_timevarying3')
 
 for (i in 1:length(plots)){  
-  file_name = paste('C:/Users/lanbro/Documents/Figures/Q2/joint/', filenames[i], '.pdf', sep='')
+  file_name = paste('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/joint/', filenames[i], '.pdf', sep='')
   pdf(file_name, height = 5, width = 8)
   print(plots[[i]])
   dev.off()
