@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ2.R')
 
 # load libraries 
 library(ggplot2) # create plots
@@ -359,7 +359,7 @@ filenames <- c('hist_PSA', 'hist_PSA_log', 'box_PSA_treat', 'spaghetti_PSA',
                'trajectories_PSA')
 
 for (i in 1:length(plots)){  
-  file_name = paste("C:/Users/lanbro/Documents/Figures/Q1/", filenames[i], ".pdf", sep="")
+  file_name = paste("C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q1/", filenames[i], ".pdf", sep="")
   pdf(file_name, height=5,width=8)
   print(plots[[i]])
   dev.off()
