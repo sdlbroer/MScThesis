@@ -8,7 +8,7 @@ rm(list = ls())
 library(tidyverse)
 
 # load all data
-derived_data <- list.files(path = "C:/Users/lanbro/Documents/Data/2023-10-17",
+derived_data <- list.files(path = "C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Data/2023-10-17",
                            pattern = ".RData$", full.names = T)
 invisible(lapply(derived_data, load, .GlobalEnv))
 rm(derived_data)
@@ -61,7 +61,7 @@ psa_long <- bind_rows(
     logPSA = log(PSA + 0.001),
     log10PSA = log10(PSA + 0.001),
     therapy_class = droplevels(therapy_class),
-    therapy_received = droplevels(therapy_received)
+    therapy_received = droplevels(therapy_received),
   ) %>% 
   # keep only those where a PSA measure is available
   filter(!is.na(date_lab)) %>%  # none of these visits has a PSA measure
@@ -72,6 +72,7 @@ psa_long <- bind_rows(
   group_by(patientId) %>% 
   mutate(
     date_last = max(date_lab, na.rm = T),
+    time_obs = as.numeric(max(date_lab, na.rm = T) - min(date_lab))/(365.25/12),
     num_psa_value = sum(!is.na(PSA)),
     seq_psa_value = seq(num_psa_value)
   ) %>% 
@@ -182,6 +183,7 @@ long_meas <- bind_rows(
   # NB: remove after checks
   filter(date_lab >= date_rand & date_lab <= last_dte) %>% 
   group_by(patientId) %>% 
+  arrange(patientId, date_lab) %>%
   mutate(date_last = max(date_lab, na.rm = T),
          num_psa_value = sum(!is.na(PSA)),
          time_obs = as.numeric(max(date_lab, na.rm = T) - min(date_lab))/(365.25/12),
