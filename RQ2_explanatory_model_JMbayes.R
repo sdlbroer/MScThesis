@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ2.R')
 
 # load libraries 
 library(nlme) # fit the mixed model
@@ -25,11 +25,11 @@ set.seed(1803158)
 # add baseline date to psa_long dataframe
 psa_long_train <- psa_long_train %>%
   filter(!is.na(PSA)) %>% 
-  left_join(select(psa_long[psa_long$visit == 'Treatment start',], patientId, 
+  left_join(select(psa_long_train[psa_long_train$visit == 'Treatment start',], patientId, 
                    baseline_date = date_lab), by = 'patientId')
 
 # create dataframe with only the survival data 
-survdata <- baseline_data_table1[baseline_data_table1$id_num %in% long_meas_train$id_num,] %>%
+survdata <- baseline_data_table1_train[baseline_data_table1_train$id_num %in% psa_long_train$id_num,] %>%
   distinct(id_num, therapy_received, NLCB_overall, NLCB_overall_num, time_obs)
 
 ##########################
@@ -44,10 +44,9 @@ model_surv <- coxph(Surv(time_obs, NLCB_overall_num) ~ therapy_received,
 #######################
 
 # lmm
-model1_longit <- lme(fixed = log2PSA ~ time + therapy_received:time, 
+model1_longit <- lme(fixed = log2PSA ~ therapy_received*time, 
                      random = ~ time | id_num,
-                     data = psa_long_train,
-                     na.action = na.omit)
+                     data = psa_long_train)
 
 # mm with splines and 1 knot
 model2_longit <- lme(fixed = log2PSA ~ ns(time, k = c(2), B = c(0, 18.5))*therapy_received, 
@@ -173,13 +172,13 @@ compare_jm(model1_mm3int_joint, model2_mm3int_joint, model3_mm3int_joint,
 compare_jm(model1_quad_joint, model2_quad_joint, model3_quad_joint,
            model4_quad_joint, model5_quad_joint)
 
-compare_jm(model4_lmm_joint, # time-dependent association with splines (3 knots)
+compare_jm(model5_lmm_joint, # time-dependent association with splines (3 knots)
            model5_mm1int_joint, # time-dependent association with splines (2 knots)
            model5_mm2int_joint, # time-dependent association with splines (2 knots)
            model4_mm3int_joint, # time-dependent association with splines (2 knots)
            model5_quad_joint) # time-dependent association with splines (2 knots)
 
-round(summary(model4_lmm_joint)$Survival, 2) # linear mixed, alpha(t), 3 knots
+round(summary(model5_lmm_joint)$Survival, 2) # linear mixed, alpha(t), 3 knots
 round(summary(model5_mm1int_joint)$Survival, 2) # splines mixed (1 knot), alpha(t), 2 knots
 round(summary(model5_quad_joint)$Survival, 2) # quadratic mixed, alpha(t), 2 knots
 round(summary(model4_mm3int_joint)$Survival, 2) # splines mixed (3 knots), alpha(t), 2 knots
