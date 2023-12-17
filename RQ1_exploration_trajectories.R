@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/Documents/Scripts/data_management_RQ2.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ2.R')
 
 # load libraries
 library('ggpubr')
