@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/RQ2_data_management.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management.R')
 
 # load libraries 
 library(survival) # to fit the Cox model
