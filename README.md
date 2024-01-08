@@ -21,3 +21,8 @@ The repository contains 3 folders and ... files:
   * **TBD**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment as a baseline covariate;
   * **TBD**: folder that contains models that predict NLCB using PSA, LDH and ALP as longitudinal biomarkers and treatment as a baseline covariate;
   * **TBD**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment, previous treatmentline, Gleason score, ECOG and location of metastases as baseline covariates.
+    * **SPJM**: fits the predictive shared-parameter joint models on the *non-landmarked* data;
+    * **SPJM_landmarked**: fits the predictive shared-parameter joint models on the *landmarked* data;
+    * **landmark_LMM**: fits a two-stage landmark model in which the longitudinal covariate was captured using a linear mixed-effects model;
+    * **landmark_LOCF**: fits a landmark model using the last-observation carrief forward approach;
+    * **pencal**: fits a two-stage landmark model which uses penalized regression calibration. 
