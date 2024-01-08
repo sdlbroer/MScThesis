@@ -4,7 +4,7 @@ This GitHub repository contains all R-code for the MSc Thesis in Statistics and 
 
 The data used in this project is part of the ProBio trial (Karolinska Insititutet, Sweden), an international, multi-center, randomized controlled phase 3 platform trial, which aims to investigate novel treatments for metastatic prostate cancer.
 
-The repository contains 3 folders and ... files:
+The repository (categorized by folder) contains:
 * **main**
   * **data_management**: loads all relevant dataframes and performs initial preparation of the most used data;
   * **descriptive_statistics**: general descriptive statistics on the patient population;
