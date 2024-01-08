@@ -14,7 +14,7 @@ library(riskRegression) # calculate prediction performance
 library(survcomp) # calculate C-index
 
 # load functions
-source('create_folds_prop_function.R')
+source('Z:/Documents/Scripts/create_folds_prop_function.R')
 
 #################################
 ### prepare for model fitting ### 
