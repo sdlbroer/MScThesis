@@ -3,7 +3,7 @@
 ###########################
 
 # load pre-processed data
-source('Z:/Documents/Scripts/RQ3_data_management.R')
+source('Z:/Documents/Scripts/data_management_RQ3_data_management.R')
 
 # load libraries 
 library(survival) # fit the survival model
@@ -22,12 +22,13 @@ tn <- 10 # maximum prediction time
 times <- seq(t0, tn, length.out = (tn-t0)*2+1) # number of predictions 
 n.folds <- 5 # number of folds in the cross-validation
 n.RCV <- 20 # number of repeats of the cross-validation
-seed <- floor(1803158/4) # set seed 
-seeds <- seed:(seed + n.RCV) # create new seed for each repetition
+## specify model-specific hyperparameters
+penalty <- 'ridge' # ridge/elasticnet/lasso
+if(penalty == 'ridge') {seed <- floor(1803158/4) ; seeds <- seed:(seed + n.RCV)} # set seeds
+if(penalty == 'elasticnet') {seed <- floor(1803158/5) ; seeds <- seed:(seed + n.RCV)} # set seeds
+if(penalty == 'lasso') {seed <- floor(1803158/6) ; seeds <- seed:(seed + n.RCV)} # set seeds
 
-pen <- 'ridge' # penalty to be used in the penalized regression, options: ridge, lasso, enet
-
-# add baseline date to psa_long dataframe
+# add baseline date to longitudinal measurements 
 longdata <- psa_long_train %>%
   filter(!is.na(PSA)) %>% 
   left_join(select(psa_long[psa_long$visit == 'Treatment start',], patientId, 
@@ -99,7 +100,7 @@ for(m in 1:n.RCV){
     ## step 3: estimate penalized Cox model
     model_pcr <- fit_prclmm(object = sum_lme, surv.data = df_train_surv,
                             baseline.covs = ~ therapy_received,
-                            penalty = pen, standardize = F,
+                            penalty = penalty, standardize = F,
                             n.cores = 8, verbose = F)
     
     # validate model on test set
@@ -176,5 +177,5 @@ pp <- data.frame(times = times,
 all_cindex$mean_cindex <- apply(all_cindex, 1, mean, na.rm = T)
 all_cindex$sd_cindex <- apply(all_cindex[,-ncol(all_cindex)], 1, sd, na.rm = T)
 ## export dataframe
-write.csv(pp, 'Z:/Documents/Scripts/RQ3_prediction/saved_dataframes/pp_pencal_ridge_20x5.csv', row.names = FALSE)
-write.csv(all_cindex, 'Z:/Documents/Scripts/RQ3_prediction/saved_dataframes/cindex_pencal_ridge_20x5.csv', row.names = FALSE)
+write.csv(pp, paste0('Z:/Documents/Scripts/RQ3_prediction/saved_dataframes/pp_pencal_', penalty, '_20x5.csv'), row.names = FALSE)
+write.csv(all_cindex, paste0('Z:/Documents/Scripts/RQ3_prediction/saved_dataframes/cindex_pencal_', penalty, '_20x5.csv'), row.names = FALSE)
