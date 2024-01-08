@@ -20,5 +20,4 @@ The repository contains 3 folders and ... files:
   * **create_folds_prop_function**: adaptation of the create_folds-function of the JMbayes2 package which allows for stratified train/test-splitting of the data on the landmark time;
   * **TBD**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment as a baseline covariate;
   * **TBD**: folder that contains models that predict NLCB using PSA, LDH and ALP as longitudinal biomarkers and treatment as a baseline covariate;
-  * **TBD**: folder that contains models that predict NLCB using PSA, LDH and ALP as longitudinal biomarkers and treatment, [additions TBD] as baseline covariates.
-
+  * **TBD**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment, previous treatmentline, Gleason score, ECOG and location of metastases as baseline covariates.
