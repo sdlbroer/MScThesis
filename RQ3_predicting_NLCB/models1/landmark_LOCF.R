@@ -3,7 +3,7 @@
 ###########################
 
 # load pre-processed data
-source('Z:/Documents/Scripts/data_management_RQ3_data_management.R')
+source('Z:/Documents/Scripts/RQ3_data_management.R')
 
 # load libraries 
 library(survival) # fit the survival model
