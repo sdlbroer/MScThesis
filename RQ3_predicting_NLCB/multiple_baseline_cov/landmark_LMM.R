@@ -26,7 +26,7 @@ n.RCV <- 20 # number of repeats of the cross-validation
 seed <- floor(1803158/202) # set seed 
 seeds <- seed:(seed + n.RCV) # create new seed for each repetition
 
-# add baseline date to psa_long dataframe
+# add baseline date to longitudinal measurements 
 longdata <- psa_long_train %>%
   filter(!is.na(PSA)) %>% 
   left_join(select(psa_long_train[psa_long_train$visit == 'Treatment start',], patientId, 
