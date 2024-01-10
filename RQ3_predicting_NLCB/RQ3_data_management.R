@@ -57,9 +57,9 @@ psa_long <- bind_rows(
     # replacing missing PSA at treatment start with PSA at study baseline (7 subjects)
     PSA = replace(PSA, visit == "Treatment start" & is.na(PSA), baseline_PSA[visit == "Treatment start" & is.na(PSA)]),
     # log transformations
-    log2PSA = log2(PSA + 0.001), 
+    log2PSA = log2(PSA + 0.001, 2), 
     logPSA = log(PSA + 0.001),
-    log10PSA = log10(PSA + 0.001),
+    log10PSA = log10(PSA + 0.001, 10),
     therapy_class = droplevels(therapy_class),
     therapy_received = droplevels(therapy_received),
   ) %>% 
