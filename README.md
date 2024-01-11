@@ -17,11 +17,10 @@ The repository (categorized by folder) contains:
   * **RQ2_model_diagnostics**: performs model diagnostics for the survival and longitudinal sub-models, as well as the joint models fitted in the *RQ2_explanatory_model_JMbayes* file;
 * **RQ3_predicting_NLCB**
   * **RQ3_data_management**: updated version of the *data_management* file that includes 2 more months of data;
+  * **RQ3_data_visualization**: creates plots of the predicted AUC and Brier scores;
   * **create_folds_prop_function**: adaptation of the create_folds-function of the JMbayes2 package which allows for stratified train/test-splitting of the data on the landmark time;
   * **basic_models**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment as a baseline covariate. It contains
     * **SPJM**: fits the predictive shared-parameter joint models on the non-landmarked data;
-    * **SPJM_landmarked**: fits the predictive shared-parameter joint models on the landmarked data;
-    * **landmark_LMM**: fits a two-stage landmark model in which the longitudinal covariate was captured using a linear mixed-effects model;
     * **landmark_LOCF**: fits a landmark model using the last-observation carrief forward approach;
     * **pencal**: fits a two-stage landmark model which uses penalized regression calibration;
   * **multiple_longitudinal_cov**: folder that contains models that predict NLCB using PSA, LDH and ALP as longitudinal biomarkers and treatment as a baseline covariate. It contains files of the same name as in **basic_models**, in which the predictors were suitably updated;
