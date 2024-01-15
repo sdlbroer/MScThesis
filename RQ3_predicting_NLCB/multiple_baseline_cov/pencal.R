@@ -42,7 +42,11 @@ survdata <- baseline_data_table1_train[baseline_data_table1_train$id_num %in% lo
          Gleason = as.factor(as.character(Gleason)),
          LocationMetastases = as.factor(as.character(LocationMetastases)),
          ecog = as.factor(as.character(ecog)),
-         treatmentline = as.factor(as.character(treatmentline)))
+         treatmentline = as.factor(as.character(treatmentline))) %>%
+  filter(!is.na(Gleason)) %>%
+  filter(!is.na(LocationMetastases)) %>%
+  filter(!is.na(ecog)) %>%
+  filter(!is.na(treatmentline))
 
 # perform strict landmarking 
 survdata <- survdata[complete.cases(survdata) & survdata$time > t0,]
