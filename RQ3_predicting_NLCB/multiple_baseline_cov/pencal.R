@@ -37,7 +37,6 @@ longdata <- psa_long_train %>%
 survdata <- baseline_data_table1_train[baseline_data_table1_train$id_num %in% longdata$id,] %>%
   distinct(id = id_num, therapy_received, event = NLCB_overall_num, time = time_obs, age,
            Gleason, LocationMetastases, ecog, treatmentline, RT, ST) %>%
-  filter(treatmentline != 3) %>% # only has 5 observations
   mutate(therapy_received = as.factor(as.character(therapy_received)),
          Gleason = as.factor(as.character(Gleason)),
          LocationMetastases = as.factor(as.character(LocationMetastases)),
