@@ -25,7 +25,7 @@ n.RCV <- 20 # number of repeats of the cross-validation
 seed <- floor(1803158/201) # set seed 
 seeds <- seed:(seed + n.RCV) # create new seed for each repetition
 
-# add baseline date to longitudinal measurements 
+# add baseline date to psa_long dataframe
 longdata <- psa_long_train %>%
   filter(!is.na(PSA)) %>% 
   left_join(select(psa_long_train[psa_long_train$visit == 'Treatment start',], patientId, 
@@ -94,48 +94,47 @@ for(m in 1:n.RCV){
     df_test_surv <- folds_surv$testing[[i]]
     
     # fit landmark model (Cox PH)
-    model_landmark_LOCF <- coxph(Surv(time_obs, NLCB_overall_num) ~ therapy_received + Gleason + LocationMetastases + ecog + treatmentline + log2PSA, 
+    model_landmark_LOCF <- coxph(Surv(time_obs, NLCB_overall_num) ~ therapy_received + Gleason + LocationMetastases + ecog + treatmentline + log2PSA,
                                  data = df_train_surv, x = TRUE)
+    
     
     # validate model on test set 
     ## predict survival outcome
-    fail_prob <- as.data.frame(1 - predictSurvProb(model_landmark_LOCF, newdata = df_test_surv[,prednames], times = times))
-    colnames(fail_prob) <- times
-    
-    # predictive performance
-    acc_measures <- Score(as.list(fail_prob),
-                          formula = Surv(time_obs, NLCB_overall_num) ~ 1, 
-                          data = df_test_surv,
-                          times = times, 
-                          cens.model = 'km',
-                          metrics = c('auc','brier'), 
-                          conf.int = FALSE, 
-                          exact = FALSE, 
-                          split.method	= 'none', 
-                          B = 0)
-    ## extract AUC
-    auc <- acc_measures$AUC$score
-    auc <- auc[auc$model == auc$times,-1]
-    ## extract Brier
-    brier <- acc_measures$Brier$score
-    brier <- brier[brier$model == brier$times,-1]
-    ## safe accuracy measures
-    auc_df <- left_join(auc_df, auc, by = 'times')
-    brier_df <- left_join(brier_df, brier, by = 'times')
-    
-    # C-index
-    c_index <- concordance.index(x = fail_prob[,2], method = 'noether',
-                                 surv.time = df_test_surv$time_obs, 
-                                 surv.event = df_test_surv$NLCB_overall_num)$c.index
-    ## save all C-indexes
-    all_cindex[m,i] <- c_index
+    fail_prob <- try(as.data.frame(1 - predictSurvProb(model_landmark_LOCF, newdata = df_test_surv[,prednames], times = times)), silent = TRUE)
+    if(inherits(fail_prob, "try-error")) print(paste0('For repetition ', m, ', fold ', i, ': the survival model had NA values'))
+    if(!inherits(fail_prob, "try-error")){
+      colnames(fail_prob) <- times
+      
+      # predictive performance
+      acc_measures <- Score(as.list(fail_prob),
+                            formula = Surv(time_obs, NLCB_overall_num) ~ 1, 
+                            data = df_test_surv,
+                            times = times, 
+                            cens.model = 'km',
+                            metrics = c('auc','brier'), 
+                            conf.int = FALSE, 
+                            exact = FALSE, 
+                            split.method	= 'none', 
+                            B = 0)
+      ## extract AUC
+      auc <- acc_measures$AUC$score
+      auc <- auc[auc$model == auc$times,-1]
+      ## extract Brier
+      brier <- acc_measures$Brier$score
+      brier <- brier[brier$model == brier$times,-1]
+      ## safe accuracy measures
+      auc_df <- left_join(auc_df, auc, by = 'times')
+      brier_df <- left_join(brier_df, brier, by = 'times')
+      
+      # C-index
+      c_index <- concordance.index(x = fail_prob[,2], method = 'noether',
+                                   surv.time = df_test_surv$time_obs, 
+                                   surv.event = df_test_surv$NLCB_overall_num)$c.index
+      ## save all C-indexes
+      all_cindex[m,i] <- c_index
+    }
   }
   # summarize predictive performance
-  ## change row/column names
-  names(auc_df) <- c('times', paste0(rep('fold', n.folds), 1:n.folds))
-  rownames(auc_df) <- auc_df[,1]
-  names(brier_df) <- c('times', paste0(rep('fold', n.folds), 1:n.folds))
-  rownames(brier_df) <- brier_df[,1]
   ## calculate mean performance
   auc_df$mean_auc <- apply(auc_df[,-1], 1, mean, na.rm = T)
   brier_df$mean_brier <- apply(brier_df[,-1], 1, mean, na.rm = T)
@@ -152,9 +151,6 @@ for(m in 1:n.RCV){
 }
 
 # summarize predictive performance
-## change row/column names
-names(auc_reps) <- c('times', paste0(rep('repetition', n.RCV), 1:n.RCV))
-names(brier_reps) <- c('times', paste0(rep('repetition', n.RCV), 1:n.RCV))
 ## calculate mean predictive performance of all RCV
 auc_reps$mean_auc <- apply(auc_reps[,-1], 1, mean, na.rm = T)
 brier_reps$mean_brier <- apply(brier_reps[,-1], 1, mean, na.rm = T)
