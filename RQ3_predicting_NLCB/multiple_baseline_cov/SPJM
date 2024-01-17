@@ -29,7 +29,7 @@ n.RCV <- 20 # number of repeats of the cross-validation
 seed <- floor(1803158/211) # set seed 
 seeds <- seed:(seed + n.RCV) # create new seed for each repetition
 
-# add baseline date to longitudinal measurements 
+# add baseline date to psa_long dataframe
 longdata <- psa_long_train %>%
   filter(!is.na(PSA)) %>% 
   left_join(select(psa_long_train[psa_long_train$visit == 'Treatment start',], patientId, 
@@ -41,6 +41,7 @@ longdata <- psa_long_train %>%
 survdata <- baseline_data_table1[baseline_data_table1$id_num %in% longdata$id_num,] %>%
   distinct(id_num, therapy_received, NLCB_overall_num, time_obs, age,
            Gleason, LocationMetastases, ecog, treatmentline, RT, ST) %>%
+  #filter(treatmentline != 3) %>%
   mutate(therapy_received = as.factor(as.character(therapy_received)),
          Gleason = as.factor(as.character(Gleason)),
          LocationMetastases = as.factor(as.character(LocationMetastases)),
@@ -168,11 +169,6 @@ for(m in 1:n.RCV){
     }
   }
   # summarize predictive performance
-  ## change row/column names
-  names(auc_df) <- c('times', paste0(rep('fold', n.folds), 1:n.folds))
-  rownames(auc_df) <- auc_df[,1]
-  names(brier_df) <- c('times', paste0(rep('fold', n.folds), 1:n.folds))
-  rownames(brier_df) <- brier_df[,1]
   ## calculate mean performance
   auc_df$mean_auc <- apply(auc_df[,-1], 1, mean, na.rm = T)
   brier_df$mean_brier <- apply(brier_df[,-1], 1, mean, na.rm = T)
@@ -190,9 +186,6 @@ for(m in 1:n.RCV){
 }
 
 # summarize predictive performance
-## change row/column names
-names(auc_reps) <- c('times', paste0(rep('repetition', n.RCV), 1:n.RCV))
-names(brier_reps) <- c('times', paste0(rep('repetition', n.RCV), 1:n.RCV))
 ## calculate mean predictive performance of all RCV
 auc_reps$mean_auc <- apply(auc_reps[,-1], 1, mean, na.rm = T)
 brier_reps$mean_brier <- apply(brier_reps[,-1], 1, mean, na.rm = T)
