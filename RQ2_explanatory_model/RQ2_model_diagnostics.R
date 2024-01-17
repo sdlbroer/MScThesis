@@ -6,6 +6,35 @@
 source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/RQ2_explanatory/RQ2_explanatory_model_JMbayes.R')
 models <- list(model1_longit, model2_longit, model3_longit, model4_longit, model5_longit)
 
+###################################
+### distribution of event times ### 
+###################################
+
+# plot event times
+med <- median(baseline_data_table1_train$time_obs[baseline_data_table1_train$NLCB_overall_num == 1])
+## without density
+hist.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_train$NLCB_overall_num == 1,], aes(x=time_obs)) + 
+  geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
+                 fill=brewer.pal(name='Paired', n = 12)[1], 
+                 bins = 100) +   
+  geom_vline(xintercept = med, linetype = 'dashed', color = 'grey20') +
+  theme_bw() + 
+  xlab('Event time (months)') +
+  ylab('Count')
+## with density
+hist.dens.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_train$NLCB_overall_num == 1,], aes(x=time_obs)) + 
+  geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
+                 fill=brewer.pal(name='Paired', n = 12)[1], 
+                 bins = 100) +   
+  geom_density(aes(x = time_obs, y = after_stat(count)/1.5)) +
+  #scale_y_continuous(name = 'Count',
+  #                   sec.axis = sec_axis(~ .*1.5, 
+  #                                       name = 'Density')) +
+  geom_vline(xintercept = med, linetype = 'dashed', color = 'grey20') +
+  theme_bw() + 
+  xlab('Event time (months)') +
+  ylab('Count')
+
 #################
 ### Cox model ###
 #################
@@ -81,8 +110,8 @@ for(i in 1:5){
 }
 
 # plot of random sample of patients with all five models
-set.seed(31102023)
-random.pts <- sample(unique(psa_long_train$id_num), 4)
+set.seed(1803158)
+random.pts <- sample(unique(psa_long_train$id_num), 9)
 
 plots_longit.df <- psa_long_train %>%
   select(id_num, therapy_received, time, log2PSA) %>%
@@ -311,6 +340,18 @@ for(i in 1:length(models_joint)){
 ####################
 ### export plots ### 
 ####################
+
+# distribution of event times
+plots <- list(hist.survtimes, hist.dens.survtimes) 
+
+filenames <- c('hist_survivaltimes', 'hist_dens_survivaltimes')
+
+for (i in 1:length(plots)){  
+  file_name = paste('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/', filenames[i], '.pdf', sep='')
+  pdf(file_name, height = 5, width = 8)
+  print(plots[[i]])
+  dev.off()
+}
 
 # survival model 
 plots <- list(outliers.Cox) 
