@@ -1,0 +1,107 @@
+###########################
+### prepare environment ###
+###########################
+
+# load data 
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management.R')
+
+# load libraries 
+library(survival) # fit the KM
+library(survminer) # plot the KM curve
+library(RColorBrewer) # plot colours
+
+###################################
+### distribution of event times ### 
+###################################
+
+# plot event times
+med <- median(baseline_data_table1_train$time_obs[baseline_data_table1_train$NLCB_overall_num == 1])
+## without density
+hist.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_train$NLCB_overall_num == 1,], aes(x=time_obs)) + 
+  geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
+                 fill=brewer.pal(name='Paired', n = 12)[1], 
+                 bins = 100) +   
+  geom_vline(xintercept = med, linetype = 'dashed', color = 'grey20') +
+  theme_bw() + 
+  xlab('Event time (months)') +
+  ylab('Count')
+## with density
+hist.dens.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_train$NLCB_overall_num == 1,], aes(x=time_obs)) + 
+  geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
+                 fill=brewer.pal(name='Paired', n = 12)[1], 
+                 bins = 100) +   
+  geom_density(aes(x = time_obs, y = after_stat(count)/1.5)) +
+  #scale_y_continuous(name = 'Count',
+  #                   sec.axis = sec_axis(~ .*1.5, 
+  #                                       name = 'Density')) +
+  geom_vline(xintercept = med, linetype = 'dashed', color = 'grey20') +
+  theme_bw() + 
+  xlab('Event time (months)') +
+  ylab('Count')
+
+###########################
+### Kaplan-Meier curves ###
+###########################
+
+# non-stratified
+KM <- survfit(Surv(time_obs, NLCB_overall_num) ~ 1, 
+              data = baseline_data_table1_train, type = 'kaplan-meier') 
+## with count tables
+KM_plot_tables <- ggsurvplot(KM, conf.int = T,
+           risk.table = T, cumevents = T, 
+           xlab = 'Time in follow-up (months)',
+           xlim = c(0,35.5),
+           ggtheme = theme_bw(),
+           legend.labs = 'All',
+           palette = 'grey20', 
+           legend = 'none')
+## without count tables
+KM_plot <- ggsurvplot(KM, conf.int = T,
+           risk.table = F, cumevents = F, 
+           xlab = 'Time in follow-up (months)',
+           xlim = c(0,35.5),
+           ggtheme = theme_bw(),
+           legend.labs = 'All',
+           palette = 'grey20', 
+           legend = 'none')
+
+# stratified by treatment
+KM_strat <- survfit(Surv(time_obs, NLCB_overall_num) ~ therapy_received, 
+                    data = baseline_data_table1_train, type = 'kaplan-meier') 
+## with count tables
+KM_strat_plot_tables <- ggsurvplot(KM_strat, conf.int = T,
+           risk.table = T, cumevents = T, ncensor.plot = T,
+           xlab = 'Time in follow-up (months)',
+           xlim = c(0,35.5),
+           ggtheme = theme_bw(),
+           legend.labs =  c('ARSi', 'Taxane', 'PARPi', 'Platinum'),
+           palette = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)],
+           legend = 'none')
+## without count tables
+KM_strat_plot <- ggsurvplot(KM_strat, conf.int = T,
+           risk.table = F, cumevents = F, ncensor.plot = F,
+           xlab = 'Time in follow-up (months)',
+           xlim = c(0,35.5),
+           ggtheme = theme_bw(),
+           legend.labs =  c('ARSi', 'Taxane', 'PARPi', 'Platinum'),
+           palette = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)],
+           legend = 'bottom',
+           legend.title = 'Treatment')
+
+####################
+### export plots ### 
+####################
+
+# distribution of event times
+plots <- list(hist.survtimes, hist.dens.survtimes,
+              KM_plot, KM_plot_tables, KM_strat_plot, KM_strat_plot_tables) 
+
+filenames <- c('hist_survivaltimes', 'hist_dens_survivaltimes',
+               'KM_plot', 'KM_plot_tables', 'KM_strat_plot', 'KM_strat_plot_tables')
+
+for (i in 1:length(plots)){  
+  file_name = paste('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/', filenames[i], '.pdf', sep='')
+  pdf(file_name, height = 5, width = 8)
+  print(plots[[i]], newpage = FALSE)
+  dev.off()
+}
