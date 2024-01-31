@@ -19,6 +19,7 @@ The repository (categorized by folder) contains:
   * **RQ3_data_management**: updated version of the *data_management* file that includes 2 more months of data;
   * **RQ3_data_visualization**: creates plots of the predicted AUC and Brier scores;
   * **create_folds_prop_function**: adaptation of the create_folds-function of the JMbayes2 package which allows for stratified train/test-splitting of the data on the landmark time;
+  * **LDH_ALP_plots**: descriptive statistics of ALP and LDH;
   * **basic_models**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment as a baseline covariate. It contains
     * **SPJM**: fits the predictive shared-parameter joint models on the non-landmarked data;
     * **landmark_LOCF**: fits a landmark model using the last-observation carrief forward approach;
