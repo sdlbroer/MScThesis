@@ -64,7 +64,7 @@ if(time.model == 'mm2'){ # splines with 2 internal knots
 
 # functional forms
 if(assoc.param == 'slope') def.form <- ~ value(log2PSA) + slope(log2PSA, eps = 1, direction = 'back') # slope
-if(assoc.param == 'tv') def.form <- ~ value(log2PSA) * ns(fup_time, k = c(2), B = c(0, 18.5)) # time-varying 
+if(assoc.param == 'tv') def.form <- ~ value(log2PSA) * ns(fup_time, k = c(2, 4), B = c(0, 18.5)) # time-varying 
 
 ##########################
 ### dynamic prediction ###
