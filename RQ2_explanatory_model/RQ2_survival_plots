@@ -10,6 +10,7 @@ library(survival) # fit the KM
 library(survminer) # plot the KM curve
 library(RColorBrewer) # plot colours
 
+
 ###################################
 ### distribution of event times ### 
 ###################################
@@ -23,8 +24,10 @@ hist.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_train$N
                  bins = 100) +   
   geom_vline(xintercept = med, linetype = 'dashed', color = 'grey20') +
   theme_bw() + 
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=18)) +
   xlab('Event time (months)') +
-  ylab('Count')
+  ylab('Count') 
 ## with density
 hist.dens.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_train$NLCB_overall_num == 1,], aes(x=time_obs)) + 
   geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
@@ -36,6 +39,8 @@ hist.dens.survtimes <- ggplot(baseline_data_table1_train[baseline_data_table1_tr
   #                                       name = 'Density')) +
   geom_vline(xintercept = med, linetype = 'dashed', color = 'grey20') +
   theme_bw() + 
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=18)) +
   xlab('Event time (months)') +
   ylab('Count')
 
@@ -54,7 +59,10 @@ KM_plot_tables <- ggsurvplot(KM, conf.int = T,
            ggtheme = theme_bw(),
            legend.labs = 'All',
            palette = 'grey20', 
-           legend = 'none')
+           legend = 'none',
+           font.x = c(20), 
+           font.y = c(20), 
+           font.tickslab = c(18))
 ## without count tables
 KM_plot <- ggsurvplot(KM, conf.int = T,
            risk.table = F, cumevents = F, 
@@ -63,7 +71,10 @@ KM_plot <- ggsurvplot(KM, conf.int = T,
            ggtheme = theme_bw(),
            legend.labs = 'All',
            palette = 'grey20', 
-           legend = 'none')
+           legend = 'none',
+           font.x = c(20), 
+           font.y = c(20), 
+           font.tickslab = c(18))
 
 # stratified by treatment
 KM_strat <- survfit(Surv(time_obs, NLCB_overall_num) ~ therapy_received, 
@@ -76,7 +87,11 @@ KM_strat_plot_tables <- ggsurvplot(KM_strat, conf.int = T,
            ggtheme = theme_bw(),
            legend.labs =  c('ARSi', 'Taxane', 'PARPi', 'Platinum'),
            palette = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)],
-           legend = 'none')
+           legend = 'none',
+           font.x = c(20), 
+           font.y = c(20), 
+           font.tickslab = c(18),
+           legend.fontsize = c(20)) 
 ## without count tables
 KM_strat_plot <- ggsurvplot(KM_strat, conf.int = T,
            risk.table = F, cumevents = F, ncensor.plot = F,
@@ -86,7 +101,11 @@ KM_strat_plot <- ggsurvplot(KM_strat, conf.int = T,
            legend.labs =  c('ARSi', 'Taxane', 'PARPi', 'Platinum'),
            palette = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)],
            legend = 'bottom',
-           legend.title = 'Treatment')
+           legend.title = 'Treatment',
+           font.x = c(20), 
+           font.y = c(20), 
+           font.tickslab = c(18),
+           font.legend = c(20))
 
 ####################
 ### export plots ### 
