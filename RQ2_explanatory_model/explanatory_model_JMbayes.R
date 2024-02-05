@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ2.R')
 
 # load libraries 
 library(nlme) # fit the mixed model
