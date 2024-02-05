@@ -3,7 +3,7 @@
 ###########################
 
 # load pre-processed data
-source('Z:/Documents/Scripts/data_management_RQ3')
+source('Z:/Documents/Scripts/data_management_RQ3.R')
 
 # load libraries 
 library(nlme) # fit the mixed model
