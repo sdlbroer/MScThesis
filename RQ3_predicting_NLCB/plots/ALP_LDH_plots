@@ -2,8 +2,8 @@
 ### prepare environment ###
 ###########################
 
-# load data
-source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ3.R')
+# load datasource
+('Z:/Documents/Scripts/data_management_RQ3.R')
 
 # load libraries 
 library(ggplot2) # create plots
