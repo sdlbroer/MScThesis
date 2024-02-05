@@ -8,22 +8,28 @@ The repository (categorized by folder) contains:
 * **main**
   * **data_management**: loads all relevant dataframes and performs initial preparation of the most used data;
   * **descriptive_statistics**: general descriptive statistics on the patient population;
+    
 * **RQ1_PSA_dynamics**
-  * **RQ1_PSA_descriptives**: produces all descriptive statistics (including plots) to answer the first research question, which focuses on exploring the Prostate-Specific Antigen (PSA) trajectories;
-  * **RQ1_exploration_trajectories**: explores the different types of PSA trajectories for patients in the ProBio trial;
+  * **PSA_descriptives**: produces all descriptive statistics (including plots) to answer the first research question, which focuses on exploring the Prostate-Specific Antigen (PSA) trajectories;
+  * **exploration_trajectories**: explores the different types of PSA trajectories for patients in the ProBio trial;
+    
 * **RQ2_explanatory_model**
-  * **RQ2_explanatory_model_JMbayes**: fits a number of joint models to explore the relationship between repeated measurements of PSA and the survival outcome No-Longer Clinical Benefit (NLCB);
-  * **RQ2_explanatory_model_timedependentCox**: fits a time-dependent Cox model to explore the relationship between PSA and NLCB;
-  * **RQ2_model_diagnostics**: performs model diagnostics for the survival and longitudinal sub-models, as well as the joint models fitted in the *RQ2_explanatory_model_JMbayes* file;
+  * **explanatory_model_JMbayes**: fits a number of joint models to explore the relationship between repeated measurements of PSA and the survival outcome No-Longer Clinical Benefit (NLCB);
+  * **explanatory_model_timedependentCox**: fits a time-dependent Cox model to explore the relationship between PSA and NLCB;
+  * **model_diagnostics**: performs model diagnostics for the survival and longitudinal sub-models, as well as the joint models fitted in the *RQ2_explanatory_model_JMbayes* file;
+  * **survival_plots**: performs model diagnostics for the survival and longitudinal sub-models, as well as the joint models fitted in the *RQ2_explanatory_model_JMbayes* file;
+    
 * **RQ3_predicting_NLCB**
-  * **RQ3_data_management**: updated version of the *data_management* file that includes 2 more months of data;
-  * **RQ3_data_visualization**: creates plots of the predicted AUC and Brier scores;
   * **create_folds_prop_function**: adaptation of the create_folds-function of the JMbayes2 package which allows for stratified train/test-splitting of the data on the landmark time;
-  * **ALP_LDH_plots**: descriptive statistics of ALP and LDH;
-  * **basic_models**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment as a baseline covariate. It contains
+  * **data_management_RQ3**: updated version of the *data_management* file that includes 2 more months of data;
+  * **basic_models** (folder): models that predict NLCB using PSA as a longitudinal biomarker and treatment as a baseline covariate. It contains
     * **SPJM**: fits the predictive shared-parameter joint models on the non-landmarked data;
     * **landmark_LOCF**: fits a landmark model using the last-observation carrief forward approach;
     * **pencal**: fits a two-stage landmark model which uses penalized regression calibration;
-  * **multiple_longitudinal_cov**: folder that contains models that predict NLCB using PSA, LDH and ALP as longitudinal biomarkers and treatment as a baseline covariate. It contains files of the same name as in **basic_models**, in which the predictors were suitably updated;
-  * **multiple_baseline_cov**: folder that contains models that predict NLCB using PSA as a longitudinal biomarker and treatment, previous treatmentline, Gleason score, ECOG and location of metastases as baseline covariates. It contains files of the same name as in **basic_models**, in which the predictors were suitably updated.
-
+  * **multiple_longitudinal_cov** (folder): models that predict NLCB using PSA, LDH and ALP as longitudinal biomarkers and treatment as a baseline covariate. It contains files of the same name as in **basic_models**, in which the predictors were suitably updated;
+  * **multiple_baseline_cov** (folder): models that predict NLCB using PSA as a longitudinal biomarker and treatment, previous treatmentline, Gleason score, ECOG and location of metastases as baseline covariates. It contains files of the same name as in **basic_models**, in which the predictors were suitably updated;
+  * **plots** (folder): plots 
+    * **ALP_LDH_plots**: descriptive statistics of ALP and LDH;
+    * **dynamic_prediction_landmark_plots**
+    * **dynamic_prediction_plots**
+    * **performance_measure_plots**: creates plots of the predicted AUC and Brier scores.
