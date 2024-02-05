@@ -39,18 +39,22 @@ summary((arrange(long_meas_train, patientId, desc(time)) %>%
 
 # histograms
 hist1 <- ggplot(long_meas_train_noNA, aes(x=PSA)) + 
-  geom_histogram(color=brewer.pal(name="Paired", n = 12)[2], 
-                 fill=brewer.pal(name="Paired", n = 12)[1], 
+  geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
+                 fill=brewer.pal(name='Paired', n = 12)[1], 
                  bins = 100) + 
-  theme_bw() + 
+  theme_bw() +
+  theme(axis.text=element_text(size=28),
+        axis.title=element_text(size=30)) +
   xlab('PSA (ng/ml)') +
   ylab('Count')
 
 hist2 <- ggplot(long_meas_train_noNA, aes(x=log2PSA)) + 
-  geom_histogram(color=brewer.pal(name="Paired", n = 12)[2], 
-                 fill=brewer.pal(name="Paired", n = 12)[1], 
+  geom_histogram(color=brewer.pal(name='Paired', n = 12)[2], 
+                 fill=brewer.pal(name='Paired', n = 12)[1], 
                  bins = 100) + 
   theme_bw() + 
+  theme(axis.text=element_text(size=28),
+        axis.title=element_text(size=30)) +
   xlab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) + 
   ylab('Count')
 
@@ -59,8 +63,12 @@ box <- ggplot(data = long_meas_train_noNA, aes(x = time, y = log2PSA,
                                    fill = therapy_received)) +
   geom_boxplot() +
   theme_bw() + 
-  theme(legend.position = 'bottom') + 
-  scale_fill_manual(values = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]) +
+  theme(legend.position = 'bottom',
+        legend.title = element_text(size=16),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size=20),
+        axis.title = element_text(size=18)) + 
+  scale_fill_manual(values = brewer.pal(name='Paired', n = 12)[c(1,3,5,7)]) +
   labs(fill = 'Treatment') +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) # split on treatment
@@ -74,17 +82,21 @@ spag.tot <- ggplot(data = long_meas_train_noNA, aes(x = time, y = PSA)) +
   geom_line(aes(group = patientId, colour = patientId)) +
   geom_smooth(colour = 'black') +
   theme_bw() + 
-  theme(legend.position = 'none') +
-  scale_colour_manual(values = brewer.pal(name="PuBu", n = 9)[rep(4:9, 31)]) + 
+  theme(legend.position = 'none',
+        axis.text = element_text(size=22),
+        axis.title = element_text(size=24)) +
+  scale_colour_manual(values = brewer.pal(name='PuBu', n = 9)[rep(4:9, 31)]) + 
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) # all observations
 
 spag.tot.log <- ggplot(data = long_meas_train_noNA, aes(x = time, y = log2PSA)) + 
   geom_line(aes(group = patientId, colour = patientId)) +
   geom_smooth(colour = 'black') +
-  scale_colour_manual(values = brewer.pal(name="PuBu", n = 9)[rep(4:9, 31)]) + 
+  scale_colour_manual(values = brewer.pal(name='PuBu', n = 9)[rep(4:9, 31)]) + 
   theme_bw() + 
-  theme(legend.position = 'none') +
+  theme(legend.position = 'none',
+        axis.text = element_text(size=22),
+        axis.title = element_text(size=24)) +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) # all observations
 
@@ -92,23 +104,28 @@ spag.treat <- ggplot(data = long_meas_train_noNA, aes(x = time, y = log2PSA)) +
   geom_line(aes(group = patientId, colour = therapy_received)) +
   geom_smooth(colour = 'black') +
   theme_bw() +
-  theme(legend.position = 'none') +
-  scale_color_manual(values = brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]) +
+  scale_color_manual(values = brewer.pal(name='Paired', n = 12)[c(1,3,5,7)]) +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
-  facet_wrap(~ therapy_received) # split on treatment
+  facet_wrap(~ therapy_received) +
+  theme(legend.position = 'none',
+        axis.text = element_text(size=16),
+        axis.title = element_text(size=20),
+        strip.text = element_text(size=16)) # split on treatment
 
 # reverse time scale 
-
 reverse.event <- ggplot(data = long_meas_train_noNA, aes(x = reverse_time, y = log2PSA)) + 
   geom_line(aes(group = patientId, colour = NLCB_overall)) +
   geom_smooth(colour = 'black') + 
   theme_bw() +
-  theme(legend.position = 'none') +
-  scale_color_manual(values = brewer.pal(name="PRGn", n = 11)[c(4,2)]) +
+  scale_color_manual(values = brewer.pal(name='PRGn', n = 11)[c(4,2)]) +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
-  facet_wrap(~ NLCB_overall) # split on outcome
+  facet_wrap(~ NLCB_overall) +
+  theme(legend.position = 'none',
+        axis.text = element_text(size=16),
+        axis.title = element_text(size=18),
+        strip.text = element_text(size=16)) # split on outcome
 
 #####################################
 ### plot(s) 3: mean profile plots ### 
@@ -117,6 +134,7 @@ reverse.event <- ggplot(data = long_meas_train_noNA, aes(x = reverse_time, y = l
 # dataframe with the mean information per treatment
 statsMeanTreat <- long_meas_train_noNA %>%
   group_by(therapy_received, time) %>%
+  mutate(time = round(time)) %>%
   summarise(
     count = n(),
     meanPSA = mean(log2PSA,na.rm=TRUE),
@@ -134,7 +152,7 @@ long_meas_train_noNA_int <- long_meas_train_noNA %>%
 mean.treat_withleg <- ggplot(data = long_meas_train_noNA_int, aes(x = time, y = log2PSA)) +
   geom_line(aes(group = patientId, color = treat_num), alpha = 0.4) + 
   geom_line(data = statsMeanTreat, 
-            mapping = aes(x = time, y = meanPSA, 
+            mapping = aes(x = time, y = meanPSA, group = therapy_received,
                           color = therapy_received), linewidth = 0.8) +
   geom_point(data = statsMeanTreat, 
              mapping = aes(x = time, y = meanPSA, 
@@ -144,17 +162,21 @@ mean.treat_withleg <- ggplot(data = long_meas_train_noNA_int, aes(x = time, y = 
                               ymin = ci95lower, ymax = ci95upper, color = therapy_received), 
                 width = 0.5, alpha = 0.5, linewidth = 0.7) +
   scale_color_manual(values = c('grey80', 'grey60', 'grey40', 'grey30',
-                                brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]),
+                                brewer.pal(name='Paired', n = 12)[c(1,3,5,7)]),
                      labels = c('ARSi', 'Taxane', 'PARPi', 'Platinum', 
                                 'ARSi', 'Taxane', 'PARPi', 'Platinum')) +
   scale_shape_manual(values = c(15, 16, 17, 18)) + 
   guides(colour = guide_legend(title = 'Treatment',
                                override.aes = list(shape = c(rep(NA, 4), 15, 16, 17, 18),
                                                    color = c('grey80', 'grey60', 'grey40', 'grey30',
-                                                             brewer.pal(name="Paired", n = 12)[c(1,3,5,7)]))),
+                                                             brewer.pal(name='Paired', n = 12)[c(1,3,5,7)]))),
          shape = 'none') + 
   theme_bw() + 
-  theme(legend.position = 'bottom') +
+  theme(legend.position = 'bottom',
+        legend.title = element_text(size=16),
+        legend.text = element_text(size=16),
+        axis.text = element_text(size=20),
+        axis.title = element_text(size=18)) +
   labs(color = 'Treatment') +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) 
@@ -169,11 +191,13 @@ mean.treat.facet <- ggplot(statsMeanTreat, aes(x = time, y = meanPSA,
   geom_line() + 
   geom_errorbar(aes(ymin = ci95lower, ymax = ci95upper), width = 0.5) +
   geom_point(size = 1) +
-  scale_color_manual(values = c('grey87', brewer.pal(name="Paired", n = 12)[c(1,3,5,7)])) +
+  scale_color_manual(values = c('grey87', brewer.pal(name='Paired', n = 12)[c(1,3,5,7)])) +
   scale_shape_manual(values = c(15, 16, 17, 18)) +
   guides(shape = 'none') + 
   theme_bw() + 
-  theme(legend.position = 'none') +
+  theme(legend.position = 'none',
+        axis.text = element_text(size=20),
+        axis.title = element_text(size=18)) +
   labs(color = 'Treatment') +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) + 
@@ -201,15 +225,20 @@ psa_wide_train <- unique(left_join(full.df, meas)) %>%
 
 # wide format 
 psa_wide_train <- reshape(psa_wide_train, idvar = 'id_num', 
-                          timevar = 'time', direction = "wide")
+                          timevar = 'time', direction = 'wide')
 
 paircor <- ggpairs(psa_wide_train, columns = 2:9, 
-        upper = list(continuous = wrap("cor", size=3, stars = F)),
+        upper = list(continuous = wrap('cor', size=4, stars = F)),
         columnLabels = c('Baseline', paste('Month', c(1,2,4,6,9,12,15)))) + 
-  #xlab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
-  #ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
+  xlab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
+  ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) +
   theme_bw() +
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank(),
+        axis.text = element_text(size=11),
+        axis.title = element_text(size=13),
+        strip.text.x = element_text(size=11),
+        strip.text.y = element_text(size=7))
+paircor
 
 rm(meas,full.df,psa_wide_train)
 
@@ -338,8 +367,11 @@ PSA_traj_types <- ggplot(trajectories.df[trajectories.df$patientId %in% pts,],
   xlab('Time in follow-up (months)') +
   ylab('PSA (ng/ml)') +
   theme_bw() +
-  theme(legend.position="none") +
-  scale_color_manual(values = brewer.pal(name="Paired", n = 12)[rep(1:4, 11)])
+  theme(legend.position='none',
+        axis.text = element_text(size=12),
+        axis.title = element_text(size=16),
+        strip.text = element_text(size=14)) +
+  scale_color_manual(values = brewer.pal(name='Paired', n = 12)[rep(1:4, 11)])
 
 rm(flat, decr_to_flat, flatincr, flatcup, monotincr, flat_to_incr, decr_to_INCR, 
    DECR_to_INCR, DECR_to_flat, incr_to_decr, sshape, two_meas, three_meas,
@@ -359,7 +391,7 @@ filenames <- c('hist_PSA', 'hist_PSA_log', 'box_PSA_treat', 'spaghetti_PSA',
                'trajectories_PSA')
 
 for (i in 1:length(plots)){  
-  file_name = paste("C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q1/", filenames[i], ".pdf", sep="")
+  file_name = paste('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q1/', filenames[i], '.pdf', sep='')
   pdf(file_name, height=5,width=8)
   print(plots[[i]])
   dev.off()
