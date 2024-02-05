@@ -4,6 +4,7 @@
 
 # load data
 source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ2.R')
+# source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ3.R')
 
 # load libraries 
 library(tableone) # to create table 1
@@ -26,22 +27,19 @@ table(baseline_data_table1_train$therapy_received,
 # nr. of events
 table((long_meas_train %>% distinct(patientId, NLCB_overall))$NLCB_overall) 
 
-# summary of the follow-up times 
-summary(long_meas_train$months_in_followup) 
-hist(long_meas_train$months_in_followup, breaks = 50)
-
 # counts per visit type
 table(long_meas_train$visit) 
 
 # nr. of locked observations
 table(long_meas_train$locked) 
 
-table(round((arrange(long_meas_train, patientId, desc(months_in_followup)) %>%
-           filter(!duplicated(patientId)))$months_in_followup))
-summary((arrange(long_meas_train, patientId, desc(months_in_followup)) %>%
-  filter(!duplicated(patientId)))$months_in_followup)
-hist((arrange(long_meas_train, patientId, desc(months_in_followup)) %>%
-           filter(!duplicated(patientId)))$months_in_followup, 25)
+# summary of the follow-up times 
+table(round((arrange(long_meas_train, patientId, desc(time)) %>%
+               filter(!duplicated(patientId)))$time))
+summary((arrange(long_meas_train, patientId, desc(time)) %>%
+           filter(!duplicated(patientId)))$time)
+hist((arrange(long_meas_train, patientId, desc(time)) %>%
+        filter(!duplicated(patientId)))$time, 25)
 
 ##################################
 ### Metastases differentiation ### 
@@ -159,74 +157,65 @@ bone_count_event <- unique(bone_count_event)
 bone_count_plot <- ggplot(bone_count, aes(fill = Var2, y = Freq, x = Var1)) + 
   geom_bar(position="stack", stat="identity") +
   theme_bw() +
-  theme(axis.text.x=element_text(angle=45, hjust = 1),
-        legend.position = 'bottom') +
+  theme(legend.position = 'bottom',
+        axis.text.x=element_text(angle=45, hjust = 1, size = 16),
+        legend.title = element_text(size=14),
+        legend.text = element_text(size=14),
+        axis.text.y = element_text(size=16),
+        axis.title = element_text(size=18)) +
   xlab(NULL) +
   ylab('Frequency') +
   scale_fill_manual(values = brewer.pal(name = 'Paired', n = 12)[c(1,3,5,7)]) + 
   scale_x_discrete(labels = c('Undetected', '0-1', '2-4', '5-9', '10-19', 
                               expression(phantom(x) >=20), 'Diffuse', 'Not evaluated')) +
-  guides(fill = guide_legend(title = 'Metastasis location'))
+  guides(fill = guide_legend(title = 'Metastasis location', nrow = 2))
 
 bone_count_plot_treat <- ggplot(bone_count_treat, aes(fill=Var2, y=Freq, x=Var1)) + 
   geom_bar(position="stack", stat="identity") + # position="fill"
   theme_bw() +
-  theme(axis.text.x=element_text(angle=45, hjust = 1),
-        legend.position = 'bottom') +
+  theme(legend.position = 'bottom',
+        axis.text.x=element_text(angle=45, hjust = 1, size = 16),
+        legend.title = element_text(size=14),
+        legend.text = element_text(size=14),
+        axis.text.y = element_text(size=16),
+        axis.title = element_text(size=18)) +
   xlab(NULL) +
   ylab('Frequency') +
   scale_fill_manual(values = brewer.pal(name = 'Paired', n = 12)[c(1,3,5,7)]) + 
   scale_x_discrete(labels = c('Undetected', '0-1', '2-4', '5-9', '10-19', 
                               expression(phantom(x) >=20), 'Diffuse', 'Not evaluated')) +
-  guides(fill = guide_legend(title = 'Metastasis location')) +
+  guides(fill = guide_legend(title = 'Metastasis location', nrow = 2)) +
   facet_wrap(~ therapy_received)
 
 bone_count_plot_event <- ggplot(bone_count_event, aes(fill=Var2, y=Freq, x=Var1)) + 
   geom_bar(position="stack", stat="identity") + # position="fill"
   theme_bw() +
-  theme(axis.text.x=element_text(angle=45, hjust = 1),
-        legend.position = 'bottom') +
+  theme(legend.position = 'bottom',
+        axis.text.x=element_text(angle=45, hjust = 1, size = 16),
+        legend.title = element_text(size=14),
+        legend.text = element_text(size=14),
+        axis.text.y = element_text(size=16),
+        axis.title = element_text(size=18)) +
   xlab(NULL) +
   ylab('Frequency') +
   scale_fill_manual(values = brewer.pal(name = 'Paired', n = 12)[c(1,3,5,7)]) + 
   scale_x_discrete(labels = c('Undetected', '0-1', '2-4', '5-9', '10-19', 
                               expression(phantom(x) >=20), 'Diffuse', 'Not evaluated')) +
-  guides(fill = guide_legend(title = 'Metastasis location')) +
+  guides(fill = guide_legend(title = 'Metastasis location', nrow = 2)) +
   facet_wrap(~ event)
 
 # export plots 
-pdf('C:/Users/lanbro/Documents/Figures/Descriptive/bone_count.pdf', height = 5, width = 8)
+pdf('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Descriptive/bone_count.pdf', height = 5, width = 8)
 print(bone_count_plot)
 dev.off()
 
-pdf('C:/Users/lanbro/Documents/Figures/Descriptive/bone_count_treat.pdf', height = 5, width = 8)
+pdf('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Descriptive/bone_count_treat.pdf', height = 5, width = 8)
 print(bone_count_plot_treat)
 dev.off()
 
-pdf('C:/Users/lanbro/Documents/Figures/Descriptive/bone_count_event.pdf', height = 5, width = 8)
+pdf('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Descriptive/bone_count_event.pdf', height = 5, width = 8)
 print(bone_count_plot_event)
 dev.off()
-
-#####################
-### comorbidities ### 
-#####################
-comorb_info <- baseline_cr[baseline_cr$patientId %in% unique(long_meas_train$patientId),] %>%
-  select('E1_F3_currentComorb', 'E1_F3_Comorb_0', 'E1_F3_Comorb_1',
-  'E1_F3_Comorb_2', 'E1_F3_Comorb_3', 'E1_F3_Comorb_4', 'E1_F3_Comorb_5', 'E1_F3_Comorb_6',
-  'E1_F3_ComorbOther', 'E1_F3_cardiovascDisease')
-
-#########################
-### primary treatment ### 
-#########################
-
-##################
-###            ### 
-##################
-
-library(survminer)
-surv.obj <- Surv(time = survdata$time, event = survdata$event)
-KM <- survfit(surv.obj ~ 1, type = 'kaplan-meier')
-ggsurvplot(KM, data = survdata, risk.table = T, cumevents = T, legend = 'none')
 
 ###############
 ### Table 1 ###
@@ -238,7 +227,7 @@ listVars <- setdiff(names(baseline_data_table1_train[,]),
                       'TimeSinceMetastaticDisease', 'TimeSincePCdiagnosis',
                       'therapy_class'))
 catVars <- c('country', 'TNMstagingT', 'TNMstagingN', 'TNMstagingM', 'Gleason', 
-             'LocationMetastases', 'therapy_received')
+             'LocationMetastases', 'therapy_received', 'ecog')
 
 # create table 
 table1 <- CreateTableOne(data = baseline_data_table1_train, vars = listVars, 
@@ -246,12 +235,12 @@ table1 <- CreateTableOne(data = baseline_data_table1_train, vars = listVars,
 table1
 
 table1.strat <- CreateTableOne(data = baseline_data_table1_train, vars = listVars, 
-                         factorVars = setdiff(catVars, 'therapy_received'), 
-                         includeNA = T, strata = c('therapy_received')) 
+                               factorVars = setdiff(catVars, 'therapy_received'), 
+                               includeNA = T, strata = c('therapy_received')) 
 table1.strat
 
 # make LaTeX file from table 1 
-tabAsStringMatrix <- print(table1, nonnormal = setdiff(listVars, catVars),
+tabAsStringMatrix <- print(table1.strat, nonnormal = setdiff(listVars, catVars),
                            printToggle = FALSE, noSpaces = TRUE)
 xtable(tabAsStringMatrix)
 # print(xtable(xtable(tabAsStringMatrix), type = 'latex'), file = 'Table1.tex')
