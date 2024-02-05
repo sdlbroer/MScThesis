@@ -3,7 +3,7 @@
 ###########################
 
 # load models 
-source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/RQ2_explanatory/RQ2_explanatory_model_JMbayes.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/RQ2_explanatory/explanatory_model_JMbayes.R')
 models <- list(model1_longit, model2_longit, model3_longit, model4_longit, model5_longit)
 
 #################
