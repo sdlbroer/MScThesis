@@ -3,7 +3,7 @@
 ###########################
 
 # load data
-source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/RQ3_data_management.R')
+source('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Scripts/data_management_RQ3.R')
 
 # load libraries 
 library(ggplot2) # create plots
