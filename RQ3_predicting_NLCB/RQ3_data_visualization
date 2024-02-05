@@ -15,8 +15,8 @@ library(stringr)  # manipulate dataframes
 # set global parameters
 t0 <- 4
 minAUC <- 0.4
-maxAUC <- 0.85
-minBrier <- 0.06
+maxAUC <- 0.9
+minBrier <- 0.04
 maxBrier <- 0.3
 
 # function to summarize the C-indices
@@ -38,7 +38,7 @@ CI.func <- function(CI.list){
            model.int = model,
            model = NA,
            model = ifelse(grepl('pencal', model.int), 'pencal', model),
-           model = ifelse(grepl('SPJM', model.int), 'SPJM', model),
+           model = ifelse(grepl('SPJM', model.int), 'JM', model),
            model = ifelse(grepl('strictlandmarking', model.int), 'landmarking', model),
            CI_mean = round(CI_mean, 2),
            CI_SD = round(CI_SD, 2),
@@ -180,7 +180,7 @@ AUC.func <- function(df, CI_df){
     mutate(variable = gsub("auc_", "", variable)) %>%
     mutate(model = NA,
            model = ifelse(variable %in% c('lasso', 'elasticnet', 'ridge'), 'pencal', model),
-           model = ifelse(variable %in% c('lmm_slope', 'lmm_tv', 'mm1_slope', 'mm1_tv', 'mm2_slope', 'mm2_tv'), 'SPJM', model),
+           model = ifelse(variable %in% c('lmm_slope', 'lmm_tv', 'mm1_slope', 'mm1_tv', 'mm2_slope', 'mm2_tv'), 'JM', model),
            model = ifelse(grepl('landmarking', variable), 'landmarking', model),
            variable = ifelse(variable == 'elasticnet', 'enet', variable),
            variable = ifelse(grepl('landmarking', variable), str_sub(variable, 13, 100), variable),
@@ -196,7 +196,7 @@ brier.func <- function(df, CI_df){
     mutate(variable = gsub("brier_", "", variable)) %>%
     mutate(model = NA,
            model = ifelse(variable %in% c('lasso', 'elasticnet', 'ridge'), 'pencal', model),
-           model = ifelse(variable %in% c('lmm_slope', 'lmm_tv', 'mm1_slope', 'mm1_tv', 'mm2_slope', 'mm2_tv'), 'SPJM', model),
+           model = ifelse(variable %in% c('lmm_slope', 'lmm_tv', 'mm1_slope', 'mm1_tv', 'mm2_slope', 'mm2_tv'), 'JM', model),
            model = ifelse(grepl('landmarking', variable), 'landmarking', model),
            variable = ifelse(variable == 'elasticnet', 'enet', variable),
            variable = ifelse(grepl('landmarking', variable), str_sub(variable, 13, 100), variable),
@@ -278,22 +278,26 @@ for(i in 1:length(nr.preds)){
                              color = model, alpha = best_CI, linetype = model)) +
     geom_line(aes(size = model)) +
     scale_alpha_manual(labels = c('yes' = 'Optimal', 'no' = 'Non-optimal'),
-                       values = c('yes' = 1, 'no' = 0.25)) +
+                       values = c('yes' = 1, 'no' = 0.3)) +
     labs(x = "Months since baseline", y = "AUC") +
     #ggtitle('AUC') +
     ylim(c(minAUC, maxAUC)) +
     geom_vline(xintercept = t0, linetype = "dashed", color = "grey75") +
     theme_minimal() +
-    theme(legend.position = 'bottom') +
-    scale_color_manual(labels=c('Landmarking', 'PRC', 'SPJM'),
-                       values = brewer.pal(name ="Paired", n = 9)[c(2,4,8)]) +
-    scale_linetype_manual(labels=c('Landmarking', 'PRC', 'SPJM'),
-                          values = c('landmarking' = 'solid', 'pencal' = 'dotted', 'SPJM' = 'longdash')) +
-    scale_size_manual(labels=c('Landmarking', 'PRC', 'SPJM'),
-                      values = c('landmarking' = 0.6, 'pencal' = 1, 'SPJM' = 0.7)) +
-    guides(color = guide_legend(override.aes = list(
-      linetype = c('solid', 'dotted', 'longdash'),
-      color = brewer.pal(name ="Paired", n = 9)[c(2,4,8)])),
+    theme(legend.position = 'none',
+          axis.text=element_text(size=20),
+          axis.title=element_text(size=18)) +
+    scale_color_manual(labels=c('Landmarking', 'PRC', 'JM'),
+                       values = brewer.pal(name ="Paired", n = 9)[c(8,2,4)]) +
+    scale_linetype_manual(labels=c('Landmarking', 'PRC', 'JM'),
+                          values = c('landmarking' = 'dotdash', 'pencal' = 'solid', 'JM' = 'longdash')) +
+    scale_size_manual(labels=c('Landmarking', 'PRC', 'JM'),
+                      values = c('landmarking' = 1.5, 'pencal' = 0.8, 'JM' = 0.8)) +
+    guides(color = guide_legend(
+      override.aes = list(linetype = c('dotdash', 'solid', 'longdash'),
+                          color = brewer.pal(name ="Paired", n = 9)[c(2,4,8)],
+                          linewidth = c(1, 0.7, 0.7),
+                          size = c(3,3,3))),
       linetype = 'none',
       size = 'none',
       alpha = 'none') +
@@ -316,16 +320,21 @@ for(i in 1:length(nr.preds)){
     ylim(c(minBrier, maxBrier)) +
     geom_vline(xintercept = t0, linetype = "dashed", color = "grey75") +
     theme_minimal() +
-    theme(legend.position = 'bottom') +
-    scale_color_manual(labels=c('Landmarking', 'PRC', 'SPJM'),
-                       values = brewer.pal(name ="Paired", n = 9)[c(2,4,8)]) +
-    scale_linetype_manual(labels=c('Landmarking', 'PRC', 'SPJM'),
-                          values = c('landmarking' = 'solid', 'pencal' = 'dotted', 'SPJM' = 'longdash')) +
-    scale_size_manual(labels=c('Landmarking', 'PRC', 'SPJM'),
-                      values = c('landmarking' = 0.6, 'pencal' = 1, 'SPJM' = 0.7)) +
-    guides(color = guide_legend(override.aes = list(
-      linetype = c('solid', 'dotted', 'longdash'),
-      color = brewer.pal(name ="Paired", n = 9)[c(2,4,8)])),
+    theme(legend.position = 'none',
+          axis.text=element_text(size=20),
+          axis.title=element_text(size=18)) +
+    scale_color_manual(labels=c('Landmarking', 'PRC', 'JM'),
+                       values = brewer.pal(name ="Paired", n = 9)[c(8,2,4)]) +
+    scale_linetype_manual(labels=c('Landmarking', 'PRC', 'JM'),
+                          values = c('landmarking' = 'dotdash', 'pencal' = 'solid', 'JM' = 'longdash')) +
+    scale_size_manual(labels=c('Landmarking', 'PRC', 'JM'),
+                      values = c('landmarking' = 1.5, 'pencal' = 0.8, 'JM' = 0.8)) +
+    guides(color = guide_legend(
+      override.aes = list(
+        linetype = c('dotdash', 'solid', 'longdash'),
+        color = brewer.pal(name ="Paired", n = 9)[c(2,4,8)],
+        linewidth = c(1, 0.7, 0.7),
+        size = c(3,3,3))),
       linetype = 'none',
       size = 'none',
       alpha = 'none') +
