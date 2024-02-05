@@ -16,7 +16,11 @@ cox.zph(model_surv)
 # influential diagnostics
 outliers.Cox <- ggcoxdiagnostics(model_surv, type = 'deviance',
                                  linear.predictions = FALSE, ggtheme = theme_bw(),
-                                 xlab = 'Patient ID', ylab = 'Residuals (deviance)')
+                                 xlab = 'Patient ID', ylab = 'Residuals (deviance)',
+                                 font.x = c(20), 
+                                 font.y = c(20), 
+                                 font.tickslab = c(18)) + 
+  theme(strip.text.x = element_blank())
 
 ###################
 ### mixed model ###
@@ -31,6 +35,8 @@ for(i in 1:5){
                         aes(x = time,y = pearson)) +
     geom_point() +
     theme_bw() +
+    theme(axis.text=element_text(size=24),
+          axis.title=element_text(size=26)) + 
     xlab('Time in follow-up (months)') + 
     ylab('Residuals (pearson)')
 }
@@ -39,16 +45,32 @@ for(i in 1:5){
 homosked <- vector(mode = 'list', length = 5)
 
 for(i in 1:5){
-  homosked[[i]] <- plot(models[[i]], col = 'black')
+  residuals_lm <- resid(models[[i]])
+  fitted_values_lm <- fitted(models[[i]])
+  
+  homosked[[i]] <- ggplot(mapping = aes(x = fitted_values_lm, y = residuals_lm)) + 
+    geom_point(size = 2, shape = 21, fill = 'white', color = 'black', stroke = 1.1) +
+    theme_bw() +
+    theme(axis.text=element_text(size=24),
+          axis.title=element_text(size=26)) + 
+    xlab('Fitted values') + 
+    ylab('Standardized residuals')
 }
+
+
 
 # normally distributed errors 
 for(i in 1:5){
   pdfname <- paste0('C:/Users/lanbro/OneDrive - Karolinska Institutet/Dokument/Figures/Q2/mm/model', i, '_qqplot.pdf')
   pdf(pdfname, height = 5, width = 8)
+  
+  old_par <- suppressWarnings(par())
+  par(cex.axis = 2, cex.lab = 2)
   qqPlot(residuals(models[[i]]),
          col.lines = brewer.pal(name = 'Paired', n = 12)[2],
          xlab = 'Normal quantiles', ylab = 'Standardized residuals')
+  suppressWarnings(par(old_par))
+  
   dev.off()
 }
 rm(pdfname)
@@ -60,7 +82,9 @@ for(i in 1:5){
   infl <- hlm_influence(models[[i]])
   cooksdist[[i]] <- dotplot_diag(infl$cooksd, name = 'cooks.distance', cutoff = 'internal') +
     theme_bw() + 
-    theme(legend.position = 'none') + 
+    theme(legend.position = 'none',
+          axis.text=element_text(size=24),
+          axis.title=element_text(size=26)) + 
     ylab('Cooks distance') + 
     xlab('Count')
 }
@@ -76,13 +100,16 @@ for(i in 1:5){
     geom_point() + 
     geom_abline(colour = brewer.pal(name = 'Paired', n = 12)[2]) + 
     theme_bw() + 
+    theme(axis.text=element_text(size=24),
+          axis.title=element_text(size=26)) + 
     xlab('Fitted values') + 
     ylab('Observed values')
 }
 
 # plot of random sample of patients with all five models
-set.seed(1803158)
-random.pts <- sample(unique(psa_long_train$id_num), 9)
+# set.seed(1803158)
+# random.pts <- sample(unique(psa_long_train$id_num), 9)
+random.pts <- c(20, 21, 36, 109)
 
 plots_longit.df <- psa_long_train %>%
   select(id_num, therapy_received, time, log2PSA) %>%
@@ -117,11 +144,16 @@ pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = log2PSA)) +
   geom_line(data = plots_longit.df, 
             mapping = aes(x = time, y = log2PSA.pred4, 
                           color = 'ns with 3 knots', linetype = '3knot2')) +
-  theme_bw() +
+  theme_bw() + 
+  theme(legend.position = 'bottom',
+        legend.title = element_text(size=14),
+        legend.text = element_text(size=14),
+        axis.text = element_text(size=16),
+        axis.title = element_text(size=18),
+        strip.text = element_text(size=16)) +
   xlab('Time in follow-up (months)') +
   ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) + 
   xlim(c(0, 20)) +
-  theme(legend.position = 'bottom') +
   scale_color_manual(labels=c('linear', 'quadratic', 'ns with 1 knot', 'ns with 2 knots',
                               'ns with 3 knots'),
                      values = c('linear' = brewer.pal(name='Paired', n = 12)[c(4)], 
@@ -138,9 +170,11 @@ pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = log2PSA)) +
                                    '3knot2' = 'longdash')) +
   guides(color = guide_legend(override.aes = list(
     linetype = c('solid', 'twodash', 'dashed', 'dotdash', 'longdash'),
-    color = brewer.pal(name = 'Paired', n = 12)[c(4,8,2,6,10)])),
+    color = brewer.pal(name = 'Paired', n = 12)[c(4,8,2,6,10)]),
+    nrow = 2),
     linetype = 'none') +
   labs(color = 'Model type')
+pt_sample_model_fits
 rm(random.pts, plots_longit.df)
 
 # mean trajectories per treatment, split on mixed model
@@ -242,7 +276,10 @@ meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = log2PSA)) +
   geom_line(aes(y = Platinum5, linetype = '3knot2'), 
             data = fitted_per_treat_Platinum,linewidth = 0.8, colour = 'grey10') + 
   theme_bw() +
-  theme(legend.position = 'bottom') + 
+  theme(legend.position = 'bottom',
+        axis.text = element_text(size=16),
+        axis.title = element_text(size=18),
+        strip.text = element_text(size=16)) + 
   scale_linetype_manual(labels=c('linear', 'quadratic', 'ns with 1 knot', 'ns with 2 knots',
                                  'ns with 3 knots'), 
                         values = c('linear2' = 'solid', 
@@ -302,8 +339,14 @@ for(i in 1:length(models_joint)){
     geom_hline(yintercept = exp(coef(models_joint_compare[[(i-1)%%5 + 1]])$association), colour = 'red', 
                linetype = 'dashed', linewidth = 0.5) + 
     geom_hline(yintercept = 1, colour = 'grey', linetype = 'dashed', linewidth = 0.5) + 
+    #geom_vline(xintercept = 2, colour = 'grey40', linetype = 'dotdash', linewidth = 0.5) + 
+    #geom_vline(xintercept = 4, colour = 'grey40', linetype = 'dotdash', linewidth = 0.5) + 
+    #geom_vline(xintercept = 6, colour = 'grey40', linetype = 'dotdash', linewidth = 0.5) + 
     ylim(c(0,2)) + 
     theme_bw() + 
+    theme(legend.position = 'bottom',
+          axis.text = element_text(size=24),
+          axis.title = element_text(size=26)) +
     xlab('Time in follow-up (months)') +
     ylab(expression(paste('Hazard ratio of', phantom(x), log[2](PSA)))) 
 }
@@ -335,11 +378,11 @@ filenames <- c('model1_linear_relationship', 'model2_linear_relationship',
                'model3_linear_relationship', 'model4_linear_relationship',
                'model5_linear_relationship',
                'model1_homoskedacity', 'model2_homoskedacity', 'model3_homoskedacity',
-               'model4_homoskedacity', 'model1_homoskedacity',
+               'model4_homoskedacity', 'model5_homoskedacity',
                'model1_Cooks_distance', 'model2_Cooks_distance', 'model3_Cooks_distance', 
-               'model4_Cooks_distance', 'model1_Cooks_distance', 
+               'model4_Cooks_distance', 'model5_Cooks_distance', 
                'model1_obs_vs_fitted', 'model2_obs_vs_fitted', 'model3_obs_vs_fitted', 
-               'model4_obs_vs_fitted', 'model1_obs_vs_fitted', 
+               'model4_obs_vs_fitted', 'model5_obs_vs_fitted', 
                'fitted_trajectories_random_pts', 'fitted_trajectories_treat')
 
 for (i in 1:length(plots)){  
