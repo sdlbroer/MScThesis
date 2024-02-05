@@ -30,6 +30,6 @@ The repository (categorized by folder) contains:
   * **multiple_baseline_cov** (folder): models that predict NLCB using PSA as a longitudinal biomarker and treatment, previous treatmentline, Gleason score, ECOG and location of metastases as baseline covariates. It contains files of the same name as in **basic_models**, in which the predictors were suitably updated;
   * **plots** (folder): plots 
     * **ALP_LDH_plots**: descriptive statistics of ALP and LDH;
-    * **dynamic_prediction_landmark_plots**
-    * **dynamic_prediction_plots**
+    * **dynamic_prediction_landmark_plots**: create dynamic prediction plots for the landmark times 4, 5 and 6 months;
+    * **dynamic_prediction_plots**: create dynamic prediction plots at landmark time 4 months;
     * **performance_measure_plots**: creates plots of the predicted AUC and Brier scores.
