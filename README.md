@@ -2,7 +2,7 @@
 
 This GitHub repository contains all R-code for the MSc Thesis in Statistics and Data Science of Lana Broer, completed in February 2024, at Leiden University; supervised by dr. Alessio Crippa (Karolinska Insitutet) and dr. Mirko Signorelli (Leiden University).
 
-The data used in this project is part of the ProBio trial (Karolinska Insititutet, Sweden), an international, multi-center, randomized controlled phase 3 platform trial, which aims to investigate novel treatments for metastatic prostate cancer.
+The data used in this project is part of the ProBio trial (Karolinska Insititutet, Sweden), an international, multi-center, randomized controlled phase 3 platform trial, which aims to assess treatment-biomarker combinations in metastatic prostate cancer.
 
 The repository (categorized by folder) contains:
 * **main**
