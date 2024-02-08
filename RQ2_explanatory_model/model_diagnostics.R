@@ -152,7 +152,7 @@ pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = log2PSA)) +
         axis.title = element_text(size=18),
         strip.text = element_text(size=16)) +
   xlab('Time in follow-up (months)') +
-  ylab(expression(paste(log[2](PSA), phantom(x),'(ng/ml)'))) + 
+  ylab(expression(paste(log[2](PSA)))) +
   xlim(c(0, 20)) +
   scale_color_manual(labels=c('linear', 'quadratic', 'ns with 1 knot', 'ns with 2 knots',
                               'ns with 3 knots'),
@@ -276,6 +276,8 @@ meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = log2PSA)) +
   geom_line(aes(y = Platinum5, linetype = '3knot2'), 
             data = fitted_per_treat_Platinum,linewidth = 0.8, colour = 'grey10') + 
   theme_bw() +
+  xlab('Time in follow-up (months)') +
+  ylab(expression(paste(log[2](PSA)))) + 
   theme(legend.position = 'bottom',
         axis.text = element_text(size=16),
         axis.title = element_text(size=18),
@@ -290,7 +292,8 @@ meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = log2PSA)) +
   scale_color_manual(values = brewer.pal(name = 'Paired', n = 12)[c(1,3,5,7)]) +
   guides(linetype = guide_legend(override.aes = list(color = c('grey90', 'grey70', 'grey50', 'grey30', 'grey10'),
                                                      linetype = c('solid', 'dotted', 'dashed', 
-                                                                  'dotdash', 'longdash'))),
+                                                                  'dotdash', 'longdash')),
+                                 nrow = 2),
          color = 'none') +
   labs(linetype = 'Model type')
 
