@@ -17,7 +17,7 @@ The repository (categorized by folder) contains:
   * **explanatory_model_JMbayes**: fits a number of joint models to explore the relationship between repeated measurements of PSA and the survival outcome No-Longer Clinical Benefit (NLCB);
   * **explanatory_model_timedependentCox**: fits a time-dependent Cox model to explore the relationship between PSA and NLCB;
   * **model_diagnostics**: performs model diagnostics for the survival and longitudinal sub-models, as well as the joint models fitted in the *explanatory_model_JMbayes* file;
-  * **survival_plots**: performs model diagnostics for the survival and longitudinal sub-models, as well as the joint models fitted in the *explanatory_model_JMbayes* file;
+  * **survival_plots**: produces standard survival plots for the data obtained in the *data_management* file;
     
 * **RQ3_predicting_NLCB**
   * **create_folds_prop_function**: adaptation of the create_folds-function of the JMbayes2 package which allows for stratified train/test-splitting of the data on the landmark time;
