@@ -105,115 +105,6 @@ model_pcr6 <- fit_prclmm(object = sum_lme6, surv.data = survdata.6,
                         penalty = 'ridge', standardize = F,
                         n.cores = 8, verbose = F)
 
-########################
-### model validation ###
-########################
-
-# t0 = 4 -----------------------------------------------------------------------
-longdata_validation.4 <- longdata_validation %>% filter(fup_time <= 4 & time > 4)
-survdata_validation.4 <- survdata_validation %>% filter(time > 4)
-times4 <- seq(4, tn, length.out = (tn-4)*2+1)
-# predict survival outcome
-surv_prob <- survpred_prclmm(step1 = model_lme4, step2 = sum_lme4, 
-                             step3 = model_pcr4, times = times4,
-                             new.longdata = as.data.frame(longdata_validation.4),
-                             new.basecovs = survdata_validation.4)
-fail_prob <- 1 - surv_prob$predicted_survival[,2:ncol(surv_prob$predicted_survival)]
-colnames(fail_prob) <- times4
-
-# predictive performance
-acc_measures <- Score(as.list(fail_prob), 
-                      formula = Surv(time, event) ~ 1, 
-                      data = survdata_validation.4,
-                      times = times4, 
-                      cens.model = 'km',
-                      metrics = c('auc','brier'), 
-                      conf.int = FALSE, 
-                      exact = FALSE, 
-                      split.method	= 'none', 
-                      B = 0)
-## extract AUC
-auc4 <- acc_measures$AUC$score
-auc4 <- auc4[auc4$model == auc4$times,-1]
-## extract Brier
-brier4 <- acc_measures$Brier$score
-brier4 <- brier4[brier4$model == brier4$times,-1]
-
-# C-index
-c_index4 <- concordance.index(x = fail_prob[,2], method = 'noether',
-                             surv.time = survdata_validation.4$time, 
-                             surv.event = survdata_validation.4$event)$c.index
-
-# t0 = 5 -----------------------------------------------------------------------
-longdata_validation.5 <- longdata_validation %>% filter(fup_time <= 5 & time > 5)
-survdata_validation.5 <- survdata_validation %>% filter(time > 5)
-times5 <- seq(5, tn, length.out = (tn-5)*2+1)
-# predict survival outcome
-surv_prob <- survpred_prclmm(step1 = model_lme5, step2 = sum_lme5, 
-                             step3 = model_pcr5, times = times5,
-                             new.longdata = as.data.frame(longdata_validation.5),
-                             new.basecovs = survdata_validation.5)
-fail_prob <- 1 - surv_prob$predicted_survival[,2:ncol(surv_prob$predicted_survival)]
-colnames(fail_prob) <- times5
-
-# predictive performance
-acc_measures <- Score(as.list(fail_prob), 
-                      formula = Surv(time, event) ~ 1, 
-                      data = survdata_validation.5,
-                      times = times5, 
-                      cens.model = 'km',
-                      metrics = c('auc','brier'), 
-                      conf.int = FALSE, 
-                      exact = FALSE, 
-                      split.method	= 'none', 
-                      B = 0)
-## extract AUC
-auc5 <- acc_measures$AUC$score
-auc5 <- auc5[auc5$model == auc5$times,-1]
-## extract Brier
-brier5 <- acc_measures$Brier$score
-brier5 <- brier5[brier5$model == brier5$times,-1]
-
-# C-index
-c_index5 <- concordance.index(x = fail_prob[,2], method = 'noether',
-                             surv.time = survdata_validation.5$time, 
-                             surv.event = survdata_validation.5$event)$c.index
-
-# t0 = 6 -----------------------------------------------------------------------
-longdata_validation.6 <- longdata_validation %>% filter(fup_time <= 6 & time > 6)
-survdata_validation.6 <- survdata_validation %>% filter(time > 6)
-times6 <- seq(6, tn, length.out = (tn-6)*2+1)
-# predict survival outcome
-surv_prob <- survpred_prclmm(step1 = model_lme6, step2 = sum_lme6, 
-                             step3 = model_pcr6, times = times6,
-                             new.longdata = as.data.frame(longdata_validation.6),
-                             new.basecovs = survdata_validation.6)
-fail_prob <- 1 - surv_prob$predicted_survival[,2:ncol(surv_prob$predicted_survival)]
-colnames(fail_prob) <- times6
-
-# predictive performance
-acc_measures <- Score(as.list(fail_prob), 
-                      formula = Surv(time, event) ~ 1, 
-                      data = survdata_validation.6,
-                      times = times6, 
-                      cens.model = 'km',
-                      metrics = c('auc','brier'), 
-                      conf.int = FALSE, 
-                      exact = FALSE, 
-                      split.method	= 'none', 
-                      B = 0)
-## extract AUC
-auc6 <- acc_measures$AUC$score
-auc6 <- auc6[auc6$model == auc6$times,-1]
-## extract Brier
-brier6 <- acc_measures$Brier$score
-brier6 <- brier6[brier6$model == brier6$times,-1]
-
-# C-index
-c_index6 <- concordance.index(x = fail_prob[,2], method = 'noether',
-                             surv.time = survdata_validation.6$time, 
-                             surv.event = survdata_validation.6$event)$c.index
-
 ##########################
 ### combine dataframes ### 
 ##########################
@@ -221,6 +112,10 @@ c_index6 <- concordance.index(x = fail_prob[,2], method = 'noether',
 pt <- 9 # 9, 58
 
 # t0 = 4 -----------------------------------------------------------------------
+longdata_validation.4 <- longdata_validation %>% filter(fup_time <= 4 & time > 4)
+survdata_validation.4 <- survdata_validation %>% filter(time > 4)
+times4 <- seq(4, tn, length.out = (tn-4)*2+1)
+
 ## calculate estimates for new patients
 new_est4 <- survpred_prclmm(step1 = model_lme4, step2 = sum_lme4, 
                             step3 = model_pcr4, times = times4, keep.ranef = TRUE,
@@ -274,7 +169,12 @@ for(i in 1:length(pt)) Y4 <- rbind(Y4, cbind('log2PSA' = X4[,i,ncol(X4)],
                                              'time' = X4[,ncol(X4)], 
                                              'lmark' = rep(4, length(eval.time4))))
 rm(eval.time4, X4.prep, X4.int, coefs4, random_effects4, fixed_effects4)
+
 # t0 = 5 -----------------------------------------------------------------------
+longdata_validation.5 <- longdata_validation %>% filter(fup_time <= 5 & time > 5)
+survdata_validation.5 <- survdata_validation %>% filter(time > 5)
+times5 <- seq(5, tn, length.out = (tn-5)*2+1)
+
 ## calculate estimates for new patients
 new_est5 <- survpred_prclmm(step1 = model_lme5, step2 = sum_lme5, 
                             step3 = model_pcr5, times = times5, keep.ranef = TRUE,
@@ -328,7 +228,12 @@ for(i in 1:length(pt)) Y5 <- rbind(Y5, cbind('log2PSA' = X5[,i,ncol(X5)],
                                              'time' = X5[,ncol(X5)], 
                                              'lmark' = rep(5, length(eval.time5))))
 rm(eval.time5, X5.prep, X5.int, coefs5, random_effects5, fixed_effects5)
+
 # t0 = 6 -----------------------------------------------------------------------
+longdata_validation.6 <- longdata_validation %>% filter(fup_time <= 6 & time > 6)
+survdata_validation.6 <- survdata_validation %>% filter(time > 6)
+times6 <- seq(6, tn, length.out = (tn-6)*2+1)
+
 ## calculate estimates for new patients
 new_est6 <- survpred_prclmm(step1 = model_lme6, step2 = sum_lme6, 
                             step3 = model_pcr6, times = times6, keep.ranef = TRUE,
@@ -404,26 +309,27 @@ longdata_validation.4$lmark <- 4
 longdata_validation.5$lmark <- 5
 longdata_validation.6$lmark <- 6
 
-gg.dynpred <- ggplot(plot.surv_prob, aes(x = times, y = surv_prob/(coef), group = lmark)) +
+gg.dynpred <- ggplot(plot.surv_prob, aes(x = times, y = 2^(surv_prob/coef) - 0.001, group = lmark)) +
   geom_line() +
   geom_point(data = longdata_validation.4[longdata_validation.4$id == pt,], 
-            mapping = aes(x = fup_time, y = log2PSA, group = lmark),
+            mapping = aes(x = fup_time, y = 2^log2PSA - 0.001, group = lmark),
             colour = brewer.pal(name = 'Paired', n = 12)[2]) +
   geom_point(data = longdata_validation.5[longdata_validation.5$id == pt,], 
-            mapping = aes(x = fup_time, y = log2PSA, group = lmark),
+            mapping = aes(x = fup_time, y = 2^log2PSA - 0.001, group = lmark),
             colour = brewer.pal(name = 'Paired', n = 12)[2]) +
   geom_point(data = longdata_validation.6[longdata_validation.6$id == pt,], 
-            mapping = aes(x = fup_time, y = log2PSA, group = lmark),
+            mapping = aes(x = fup_time, y = 2^log2PSA - 0.001, group = lmark),
             colour = brewer.pal(name = 'Paired', n = 12)[2]) +
-  geom_line(data = Y, mapping = aes(x = time, y = log2PSA, group = lmark),
+  geom_line(data = Y, mapping = aes(x = time, y = 2^log2PSA - 0.001, group = lmark),
             colour = brewer.pal(name = 'Paired', n = 12)[2]) + 
-  scale_y_continuous(name = expression(log[2](PSA)),
-                     limits = c(0, 5.8),
-                     breaks = seq(0, 5.8, 1),
-                     sec.axis = sec_axis(~ .*coef, 
-                                         name = "Survival probability", 
+  scale_y_continuous(name = 'PSA (ng/ml)',
+                     trans = 'log2',
+                     breaks = c(0.01, 1, 10, 50),
+                     limit = c(1, 56),
+                     sec.axis = sec_axis(~ log2(.)*coef, 
+                                         name = 'Survival probability', 
                                          breaks = seq(0, 1, 0.2))) +
-  labs(x = 'Months since baseline', y = 'Brier score') +
+  labs(x = 'Time in follow-up (months)') +
   # ggtitle('') +
   xlim(c(0,10)) +
   geom_vline(xintercept = vline.event$time, linetype = 'dotted', linewidth = 0.75,
@@ -437,7 +343,6 @@ gg.dynpred <- ggplot(plot.surv_prob, aes(x = times, y = surv_prob/(coef), group 
   theme(axis.text=element_text(size=14),
         axis.title=element_text(size=14),
         strip.text = element_text(size=14))
-
 
 ###################
 ### export data ### 
