@@ -70,41 +70,6 @@ model_pcr <- fit_prclmm(object = sum_lme, surv.data = survdata,
                         penalty = 'ridge', standardize = F,
                         n.cores = 8, verbose = F)
 
-########################
-### model validation ###
-########################
-
-# predict survival outcome
-surv_prob <- survpred_prclmm(step1 = model_lme, step2 = sum_lme, 
-                             step3 = model_pcr, times = times,
-                             new.longdata = as.data.frame(longdata_validation),
-                             new.basecovs = survdata_validation)
-fail_prob <- 1 - surv_prob$predicted_survival[,2:ncol(surv_prob$predicted_survival)]
-colnames(fail_prob) <- times
-
-# predictive performance
-acc_measures <- Score(as.list(fail_prob), 
-                      formula = Surv(time, event) ~ 1, 
-                      data = survdata_validation,
-                      times = times, 
-                      cens.model = 'km',
-                      metrics = c('auc','brier'), 
-                      conf.int = FALSE, 
-                      exact = FALSE, 
-                      split.method	= 'none', 
-                      B = 0)
-## extract AUC
-auc <- acc_measures$AUC$score
-auc <- auc[auc$model == auc$times,-1]
-## extract Brier
-brier <- acc_measures$Brier$score
-brier <- brier[brier$model == brier$times,-1]
-
-# C-index
-c_index <- concordance.index(x = fail_prob[,2], method = 'noether',
-                             surv.time = survdata_validation$time, 
-                             surv.event = survdata_validation$event)$c.index
-
 ##########################
 ### data visualization ### 
 ##########################
@@ -177,20 +142,21 @@ vline.cens <- survdata_validation[survdata_validation$id %in% pts,] %>%
 coef <- 1/max(longdata_validation$log2PSA[longdata_validation$id %in% pts])
 
 ## plot longitudinal and survival data 
-gg.dynpred <- ggplot(plot.surv_prob, aes(x = times, y = surv_prob/(coef), group = id)) +
+gg.dynpred <- ggplot(plot.surv_prob, aes(x = times, y = 2^(surv_prob/coef) - 0.001, group = id)) +
   geom_line() +
   geom_point(data = longdata_validation[longdata_validation$id %in% pts,],
-             mapping = aes(x = fup_time, y = log2PSA, group = id),
+             mapping = aes(x = fup_time, y = 2^log2PSA - 0.001, group = id),
              colour = brewer.pal(name = 'Paired', n = 12)[2]) +
-  geom_line(data = Y, mapping = aes(x = time, y = log2PSA, group = id),
+  geom_line(data = Y, mapping = aes(x = time, y = 2^log2PSA - 0.001, group = id),
             colour = brewer.pal(name = 'Paired', n = 12)[2]) +
-  scale_y_continuous(name = expression(log[2](PSA)),
-                     limits = c(0, 5.7),
-                     breaks = seq(0, 5.7, 1),
-                     sec.axis = sec_axis(~ .*coef, 
+  scale_y_continuous(name = 'PSA (ng/ml)',
+                     trans = 'log2',
+                     breaks = c(0.01, 1, 10, 50),
+                     limit = c(1, 52),
+                     sec.axis = sec_axis(~ log2(.)*coef, 
                                          name = 'Survival probability', 
                                          breaks = seq(0, 1, 0.2))) +
-  labs(x = 'Months since baseline', y = 'Brier score') +
+  labs(x = 'Time in follow-up (months)') +
   # ggtitle('') +
   xlim(c(0,10)) +
   geom_vline(xintercept = 4, linetype = 'dashed', color = 'grey60') +
@@ -202,7 +168,7 @@ gg.dynpred <- ggplot(plot.surv_prob, aes(x = times, y = surv_prob/(coef), group 
   facet_wrap(~ id) +
   theme(axis.text=element_text(size=14),
         axis.title=element_text(size=14),
-        strip.text = element_text(size=14))
+        strip.text = element_text(size=14)) 
 
 ###################
 ### export data ### 
