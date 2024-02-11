@@ -112,7 +112,7 @@ for(i in 1:5){
 random.pts <- c(20, 21, 36, 109)
 
 plots_longit.df <- psa_long_train %>%
-  select(id_num, therapy_received, time, log2PSA) %>%
+  select(id_num, therapy_received, time, PSA) %>%
   cbind(fitted(model1_longit)) %>%
   cbind(fitted(model2_longit)) %>%
   cbind(fitted(model3_longit)) %>%
@@ -123,26 +123,31 @@ plots_longit.df <- psa_long_train %>%
          log2PSA.pred2 = 'fitted(model2_longit)',
          log2PSA.pred3 = 'fitted(model3_longit)',
          log2PSA.pred4 = 'fitted(model4_longit)',
-         log2PSA.pred5 = 'fitted(model5_longit)')
+         log2PSA.pred5 = 'fitted(model5_longit)') %>%
+  mutate(PSA.pred1 = 2^log2PSA.pred1 - 0.001,
+         PSA.pred2 = 2^log2PSA.pred2 - 0.001,
+         PSA.pred3 = 2^log2PSA.pred3 - 0.001,
+         PSA.pred4 = 2^log2PSA.pred4 - 0.001,
+         PSA.pred5 = 2^log2PSA.pred5 - 0.001,) 
 
-pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = log2PSA)) +
+pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = PSA)) +
   facet_wrap(~ id_num) +
   geom_point() +
   geom_line() +
   geom_line(data = plots_longit.df, 
-            mapping = aes(x = time, y = log2PSA.pred1, 
+            mapping = aes(x = time, y = PSA.pred1, 
                           color = 'linear', linetype = 'linear2')) +
   geom_line(data = plots_longit.df, 
-            mapping = aes(x = time, y = log2PSA.pred5, 
+            mapping = aes(x = time, y = PSA.pred5, 
                           color = 'quadratic', linetype = 'quadratic2')) +
   geom_line(data = plots_longit.df, 
-            mapping = aes(x = time, y = log2PSA.pred2, 
+            mapping = aes(x = time, y = PSA.pred2, 
                           color = 'ns with 1 knot', linetype = '1knot2')) +
   geom_line(data = plots_longit.df, 
-            mapping = aes(x = time, y = log2PSA.pred3, 
+            mapping = aes(x = time, y = PSA.pred3, 
                           color = 'ns with 2 knots', linetype = '2knot2')) +
   geom_line(data = plots_longit.df, 
-            mapping = aes(x = time, y = log2PSA.pred4, 
+            mapping = aes(x = time, y = PSA.pred4, 
                           color = 'ns with 3 knots', linetype = '3knot2')) +
   theme_bw() + 
   theme(legend.position = 'bottom',
@@ -152,7 +157,8 @@ pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = log2PSA)) +
         axis.title = element_text(size=18),
         strip.text = element_text(size=16)) +
   xlab('Time in follow-up (months)') +
-  ylab(expression(paste(log[2](PSA)))) +
+  ylab('PSA (ng/ml)') +
+  scale_y_continuous(trans = 'log2', breaks = c(0, 1, 10, 64)) +
   xlim(c(0, 20)) +
   scale_color_manual(labels=c('linear', 'quadratic', 'ns with 1 knot', 'ns with 2 knots',
                               'ns with 3 knots'),
@@ -174,7 +180,7 @@ pt_sample_model_fits <- ggplot(plots_longit.df, aes(x = time, y = log2PSA)) +
     nrow = 2),
     linetype = 'none') +
   labs(color = 'Model type')
-pt_sample_model_fits
+
 rm(random.pts, plots_longit.df)
 
 # mean trajectories per treatment, split on mixed model
@@ -230,31 +236,36 @@ fitted_per_treat_Platinum <- data.frame(
   Platinum5 = predict(model5_longit, re.form = NA, newdata = data.frame(time = seq(0, 12, 0.01),
                                                                         therapy_received = 'Platinum'), level = 0),
   therapy_received = 'Platinum') 
+## transform back to non-transform PSA
+fitted_per_treat_ARSi[,2:6] <- sapply(fitted_per_treat_ARSi[,2:6], function(x) 2^x - 0.001, simplify = T)
+fitted_per_treat_Taxane[,2:6] <- sapply(fitted_per_treat_Taxane[,2:6], function(x) 2^x - 0.001, simplify = T)
+fitted_per_treat_PARPi[,2:6] <- sapply(fitted_per_treat_PARPi[,2:6], function(x) 2^x - 0.001, simplify = T)
+fitted_per_treat_Platinum[,2:6] <- sapply(fitted_per_treat_Platinum[,2:6], function(x) 2^x - 0.001, simplify = T)
 
-meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = log2PSA)) + 
-  facet_wrap(~ factor(therapy_received, levels = c('ARSi', 'Taxane', 'PARPi', 'Platinum'))) +
+## plot mean trajectories (keep only estimates < 10000 for visibility)
+meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = PSA)) + 
   geom_line(aes(group = id_num, colour = therapy_received)) +
   geom_smooth(aes(linetype = 'dotted'), se = F, colour = 'black') +
   geom_line(aes(y = ARSi1, linetype = 'linear2'), 
-            data = fitted_per_treat_ARSi,linewidth = 0.8, colour = 'grey90') + 
+            data = fitted_per_treat_ARSi[fitted_per_treat_ARSi[,2] < 10000,],linewidth = 0.8, colour = 'grey90') + 
   geom_line(aes(y = ARSi2, linetype = 'quadratic2'), 
-            data = fitted_per_treat_ARSi,linewidth = 0.8, colour = 'grey70') + 
+            data = fitted_per_treat_ARSi[fitted_per_treat_ARSi[,3] < 10000,],linewidth = 0.8, colour = 'grey70') + 
   geom_line(aes(y = ARSi3, linetype = '1knot2'), 
-            data = fitted_per_treat_ARSi,linewidth = 0.8, colour = 'grey50') + 
+            data = fitted_per_treat_ARSi[fitted_per_treat_ARSi[,4] < 10000,],linewidth = 0.8, colour = 'grey50') + 
   geom_line(aes(y = ARSi4, linetype = '2knot2'), 
-            data = fitted_per_treat_ARSi,linewidth = 0.8, colour = 'grey30') + 
+            data = fitted_per_treat_ARSi[fitted_per_treat_ARSi[,5] < 10000,],linewidth = 0.8, colour = 'grey30') + 
   geom_line(aes(y = ARSi5, linetype = '3knot2'), 
-            data = fitted_per_treat_ARSi,linewidth = 0.8, colour = 'grey10') +
+            data = fitted_per_treat_ARSi[fitted_per_treat_ARSi[,6] < 10000,],linewidth = 0.8, colour = 'grey10') +
   geom_line(aes(y = Taxane1, linetype = 'linear2'), 
-            data = fitted_per_treat_Taxane,linewidth = 0.8, colour = 'grey90') + 
+            data = fitted_per_treat_Taxane[fitted_per_treat_Taxane[,2] < 10000,],linewidth = 0.8, colour = 'grey90') + 
   geom_line(aes(y = Taxane2, linetype = 'quadratic2'), 
-            data = fitted_per_treat_Taxane,linewidth = 0.8, colour = 'grey70') + 
+            data = fitted_per_treat_Taxane[fitted_per_treat_Taxane[,3] < 10000,],linewidth = 0.8, colour = 'grey70') + 
   geom_line(aes(y = Taxane3, linetype = '1knot2'), 
-            data = fitted_per_treat_Taxane,linewidth = 0.8, colour = 'grey50') + 
+            data = fitted_per_treat_Taxane[fitted_per_treat_Taxane[,4] < 10000,],linewidth = 0.8, colour = 'grey50') + 
   geom_line(aes(y = Taxane4, linetype = '2knot2'), 
-            data = fitted_per_treat_Taxane,linewidth = 0.8, colour = 'grey30') + 
+            data = fitted_per_treat_Taxane[fitted_per_treat_Taxane[,5] < 10000,],linewidth = 0.8, colour = 'grey30') + 
   geom_line(aes(y = Taxane5, linetype = '3knot2'), 
-            data = fitted_per_treat_Taxane,linewidth = 0.8, colour = 'grey10') +  
+            data = fitted_per_treat_Taxane[fitted_per_treat_Taxane[,6] < 10000,],linewidth = 0.8, colour = 'grey10') +  
   geom_line(aes(y = PARPi1, linetype = 'linear2'), 
             data = fitted_per_treat_PARPi,linewidth = 0.8, colour = 'grey90') + 
   geom_line(aes(y = PARPi2, linetype = 'quadratic2'), 
@@ -277,11 +288,13 @@ meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = log2PSA)) +
             data = fitted_per_treat_Platinum,linewidth = 0.8, colour = 'grey10') + 
   theme_bw() +
   xlab('Time in follow-up (months)') +
-  ylab(expression(paste(log[2](PSA)))) + 
+  ylab('PSA (ng/ml)') + 
   theme(legend.position = 'bottom',
         axis.text = element_text(size=16),
         axis.title = element_text(size=18),
-        strip.text = element_text(size=16)) + 
+        strip.text = element_text(size=18),
+        legend.text = element_text(size=14),
+        legend.title = element_text(size=14)) + 
   scale_linetype_manual(labels=c('linear', 'quadratic', 'ns with 1 knot', 'ns with 2 knots',
                                  'ns with 3 knots'), 
                         values = c('linear2' = 'solid', 
@@ -295,7 +308,10 @@ meanmm_treat <- ggplot(data = psa_long_train, aes(x = time, y = log2PSA)) +
                                                                   'dotdash', 'longdash')),
                                  nrow = 2),
          color = 'none') +
-  labs(linetype = 'Model type')
+  labs(linetype = 'Model type') +
+  scale_y_continuous(trans = 'log2', breaks = c(1, 100, 10000)) +
+  facet_wrap(~ factor(therapy_received, levels = c('ARSi', 'Taxane', 'PARPi', 'Platinum', 
+                                                   scales = 'free_y')))
 
 rm(fitted_per_treat_ARSi, fitted_per_treat_Taxane, fitted_per_treat_PARPi, fitted_per_treat_Platinum)
 
